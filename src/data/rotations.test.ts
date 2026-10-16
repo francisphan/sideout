@@ -73,12 +73,46 @@ describe('receiveFormation', () => {
     for (const p of f.players) expect(p.note.length).toBeGreaterThan(20)
   })
 
-  it('front-row hitters move after contact and the setter ends at target', () => {
+  it('free front-row hitters move after contact and the setter ends at target', () => {
     const f = receiveFormation(3)
     const s = f.players.find((p) => p.spec.id === 'S')!
     expect(s.phases[1]).toEqual({ x: 6, y: 0.9 })
-    const front = f.players.filter((p) => p.frontRow && p.spec.role !== 'S')
+    const front = f.players.filter((p) => p.frontRow && p.spec.role !== 'S' && !p.passer)
+    expect(front.length).toBeGreaterThan(0)
     for (const p of front) expect(p.phases[1]).not.toEqual(p.phases[0])
+  })
+
+  it.each(ROTATIONS)('rotation %i: passers hold their spot until the ball is passed', (n) => {
+    for (const passer of ['opposite', 'outside'] as const) {
+      const f = receiveFormation(n, passer)
+      for (const p of f.players.filter((pl) => pl.passer)) {
+        expect(p.phases[1]).toEqual(p.phases[0])
+        expect(p.phases[2]).toEqual(p.phases[0])
+        if (p.frontRow) expect(p.phases[3]).not.toEqual(p.phases[0])
+        else expect(p.phases[3]).toEqual(p.phases[0])
+      }
+    }
+  })
+
+  it('release waypoints lie on the court, between the start and end of the run', () => {
+    let found = 0
+    for (const n of ROTATIONS) {
+      for (const passer of ['opposite', 'outside'] as const) {
+        for (const p of receiveFormation(n, passer).players) {
+          if (!p.releaseVia) continue
+          found++
+          expect(p.passer).toBe(false)
+          expect(p.releaseVia.x).toBeGreaterThan(0)
+          expect(p.releaseVia.x).toBeLessThan(9)
+          expect(p.releaseVia.y).toBeGreaterThan(0.3)
+          expect(p.releaseVia.y).toBeLessThan(9)
+          const [a, b] = [p.phases[0], p.phases[1]]
+          expect(p.releaseVia.x).toBeGreaterThan(Math.min(a.x, b.x))
+          expect(p.releaseVia.x).toBeLessThan(Math.max(a.x, b.x))
+        }
+      }
+    }
+    expect(found).toBeGreaterThan(0)
   })
 
   it('every position is on or just outside the court', () => {

@@ -4,7 +4,8 @@ import { POSES, poseTop } from '../data/poses'
 import CourtTip from './CourtTip'
 import Figure from './Figure'
 import Volleyball from './Volleyball'
-import type { Ball, CourtPlayer, CourtProps } from './courtTypes'
+import type { Ball, CourtPath, CourtPlayer, CourtProps } from './courtTypes'
+import { labelPoint, pathPoints, svgPath, type Point3 } from './pathGeometry'
 import { polygon, project, SCENE, unproject, VIEW, type P3 } from './projection'
 import { usePlayerInteraction } from './usePlayerInteraction'
 
@@ -22,6 +23,41 @@ function Seg({ a, b, className }: { a: P3; b: P3; className?: string }) {
   const A = project(a)
   const B = project(b)
   return <line x1={A.sx} y1={A.sy} x2={B.sx} y2={B.sy} className={className} />
+}
+
+function screen(p: Point3) {
+  const s = project(p)
+  return { x: s.sx, y: s.sy }
+}
+
+/**
+ * Labels of lanes that end inside the court and run mostly sideways hang off
+ * the outer end of the lane, away from the defender standing in it; the
+ * figures are tall, so a centred label would sit on their legs.
+ */
+function labelAnchor(p: CourtPath): 'start' | 'middle' | 'end' {
+  const dx = p.to.x - p.from.x
+  const dy = p.to.y - p.from.y
+  if (p.to.y > COURT.depth - 1 || Math.abs(dx) < Math.abs(dy) * 0.5) return 'middle'
+  return dx < 0 ? 'end' : 'start'
+}
+
+/** Splits a flight where it crosses the net plane: the points beyond it, and the points on our side. */
+function splitAtNet(pts: Point3[]): [Point3[], Point3[]] {
+  const far: Point3[] = []
+  const near: Point3[] = []
+  for (let i = 0; i < pts.length; i++) {
+    const p = pts[i]
+    const prev = pts[i - 1]
+    if (prev && prev.y < 0 !== p.y < 0) {
+      const t = (0 - prev.y) / (p.y - prev.y)
+      const cross = { x: prev.x + t * (p.x - prev.x), y: 0, z: prev.z + t * (p.z - prev.z) }
+      far.push(cross)
+      near.push(cross)
+    }
+    ;(p.y < 0 ? far : near).push(p)
+  }
+  return [far, near]
 }
 
 function Net() {
@@ -208,6 +244,40 @@ export default function Court3D({
   })
   if (ball) items.push({ y: ball.y, key: 'ball', node: <Ball3D ball={ball} /> })
   items.push({ y: 0, key: 'net', node: <Net /> })
+
+  // Paths on the floor go under everything. The ball flies, so the part of
+  // its flight on our side is drawn just after the net and in front of it;
+  // the part still on the far side stays behind the mesh.
+  const floorPaths: ReactNode[] = []
+  for (const p of paths) {
+    const pts = pathPoints(p)
+    if (!pts) continue
+    const useArrow = p.kind === 'move' || p.kind === 'shot'
+    const label = p.label ? screen({ ...labelPoint(p), z: 0 }) : null
+    const draw = (key: string, points: Point3[]) => (
+      <g key={key} className={`court-path court-path-${p.kind}`}>
+        <path d={svgPath(points.map(screen))} markerEnd={useArrow ? `url(#${arrowId})` : undefined} />
+        {label && (
+          <text
+            x={label.x}
+            y={label.y}
+            textAnchor={labelAnchor(p)}
+            dominantBaseline="hanging"
+            className="court-path-label"
+          >
+            {p.label}
+          </text>
+        )}
+      </g>
+    )
+    if (p.kind !== 'ball') {
+      floorPaths.push(draw(p.id, pts))
+      continue
+    }
+    const [far, near] = splitAtNet(pts)
+    if (far.length > 1) floorPaths.push(draw(`${p.id}-far`, far))
+    if (near.length > 1) items.push({ y: 0.001, key: `${p.id}-near`, node: draw(`${p.id}-near`, near) })
+  }
   items.sort((a, b) => a.y - b.y)
 
   let tip: ReactNode = null
@@ -240,7 +310,7 @@ export default function Court3D({
           <marker
             id={arrowId}
             viewBox="0 0 10 10"
-            refX="8"
+            refX="10"
             refY="5"
             markerWidth="5"
             markerHeight="5"
@@ -298,28 +368,7 @@ export default function Court3D({
           <Seg a={{ x: 9, y: SCENE.yMin, z: 0 }} b={{ x: 9, y: 0, z: 0 }} />
         </g>
 
-        {paths.map((p) => {
-          if (p.kind === 'move' && p.from.x === p.to.x && p.from.y === p.to.y) return null
-          const A = project({ ...p.from, z: 0 })
-          const B = project({ ...p.to, z: 0 })
-          const useArrow = p.kind === 'move' || p.kind === 'shot'
-          return (
-            <g key={p.id} className={`court-path court-path-${p.kind}`}>
-              <line
-                x1={A.sx}
-                y1={A.sy}
-                x2={B.sx}
-                y2={B.sy}
-                markerEnd={useArrow ? `url(#${arrowId})` : undefined}
-              />
-              {p.label && (
-                <text x={B.sx} y={B.sy + 30} textAnchor="middle" className="court-path-label">
-                  {p.label}
-                </text>
-              )}
-            </g>
-          )
-        })}
+        {floorPaths}
 
         {items.map((it) => (
           <g key={it.key}>{it.node}</g>

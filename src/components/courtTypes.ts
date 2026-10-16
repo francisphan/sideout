@@ -6,6 +6,9 @@ export interface Ball extends Pos {
   z?: number
 }
 
+/** A path endpoint: a spot on the floor, or a point above it for the ball. */
+export type PathPoint = Pos & { z?: number }
+
 export interface CourtPlayer {
   id: string
   pos: Pos
@@ -28,10 +31,14 @@ export type PathKind = 'move' | 'ball' | 'overlap' | 'overlap-bad' | 'shot'
 
 export interface CourtPath {
   id: string
-  from: Pos
-  to: Pos
+  from: PathPoint
+  to: PathPoint
+  /** A spot the route bends through, for a move that is not a straight line. */
+  via?: Pos
   kind: PathKind
   label?: string
+  /** For the ball: how high the flight peaks above the straight line between its endpoints, in metres. */
+  arc?: number
 }
 
 export interface BlockShadow {

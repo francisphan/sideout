@@ -34,7 +34,7 @@ export const RECEIVE_PHASES: { id: ReceivePhase; name: string; blurb: string }[]
     id: 1,
     name: 'Serve contact',
     blurb:
-      'The overlap rule ends the instant the ball is hit. The setter releases to target and hitters move to their approach spots.',
+      'The overlap rule ends the instant the ball is hit. The setter releases to target and the hitters who are not passing move to their approach spots; the passers hold.',
   },
   {
     id: 2,
@@ -57,6 +57,8 @@ export interface ReceivePlayer {
   passer: boolean
   /** Positions for each phase: before serve, at contact (release), pass, set. */
   phases: [Pos, Pos, Pos, Pos]
+  /** A spot the release run bends through, when the straight line is not the route. */
+  releaseVia?: Pos
   note: string
 }
 
@@ -72,7 +74,7 @@ export interface ReceiveFormation {
 
 const TARGET: Pos = { x: 6, y: 0.9 }
 const LEFT_APPROACH: Pos = { x: 0.8, y: 3.6 }
-const MID_APPROACH: Pos = { x: 4.6, y: 2.9 }
+const MID_APPROACH: Pos = { x: 3.6, y: 3.0 }
 const RIGHT_APPROACH: Pos = { x: 8.4, y: 3.6 }
 const LEFT_ATTACK: Pos = { x: 1.4, y: 0.9 }
 const MID_ATTACK: Pos = { x: 4.9, y: 1.0 }
@@ -85,6 +87,8 @@ interface RawRotation {
   passers: string[]
   serveTo: string
   notes: Record<string, string>
+  /** Waypoints for release runs that should not be drawn as a straight line. */
+  routes?: Record<string, Pos>
 }
 
 /**
@@ -118,6 +122,8 @@ const OUTSIDE_PASSES: Record<RotationNumber, RawRotation> = {
     },
     passers: ['OH2', 'L', 'OH1'],
     serveTo: 'L',
+    // The opposite runs the net, behind the setter's target, before stepping out to the right.
+    routes: { OPP: { x: 4.6, y: 1.3 } },
     notes: {
       S: 'Back row in zone 1. Must stay behind OH1 and right of the libero until the serve is contacted, then sprints up the sideline to target.',
       OH1: 'Front row but passing. Must stay ahead of the setter and right of the middle. After the pass, swings out to attack from the left. Some teams skip the switch and let OH1 hit from the right in this rotation.',
@@ -137,15 +143,15 @@ const OUTSIDE_PASSES: Record<RotationNumber, RawRotation> = {
     preServe: {
       OH2: { x: 1.6, y: 5.6 },
       OPP: { x: 4.4, y: 0.9 },
-      MB1: { x: 7.0, y: 0.9 },
+      MB1: { x: 7.4, y: 0.9 },
       L: { x: 4.2, y: 6.8 },
-      S: { x: 5.4, y: 2.6 },
+      S: { x: 4.5, y: 1.8 },
       OH1: { x: 7.2, y: 6.2 },
     },
     passers: ['OH2', 'L', 'OH1'],
     serveTo: 'L',
     notes: {
-      S: 'Zone 6. Must stay behind the opposite and between the libero and OH1. Hiding near the attack line makes the run to target only a few steps.',
+      S: 'Zone 6. Must stay behind the opposite and between the libero and OH1. Hiding a couple of metres off the net behind the opposite makes the run to target only a few steps.',
       OPP: 'Middle front here. Stands at the net in the centre as a screen for the setter, then runs the net to the right side.',
       MB1: 'Right front. Waits at the net on the right and swings into the middle for a quick after contact.',
       OH2: 'Front-row passer on the left. Must stay ahead of the libero and left of the opposite. Passes, then takes a few steps to attack from the left.',
@@ -222,6 +228,8 @@ const OUTSIDE_PASSES: Record<RotationNumber, RawRotation> = {
     },
     passers: ['L', 'OPP', 'OH2'],
     serveTo: 'OPP',
+    // The middle steps off the net first, then slides across behind the setter.
+    routes: { MB2: { x: 6.4, y: 2.0 } },
     notes: {
       S: 'Front row in zone 3. Must stay right of OH1, left of the middle and ahead of the opposite. Almost at target already.',
       MB2: 'Right front. Must stay right of the setter until contact, then swings into the middle for the quick.',
@@ -271,13 +279,15 @@ const OPPOSITE_PASSES: Partial<Record<RotationNumber, RawRotation>> = {
     preServe: {
       OH1: { x: 7.6, y: 1.0 },
       S: { x: 8.1, y: 2.1 },
-      MB1: { x: 5.8, y: 0.8 },
+      MB1: { x: 5.0, y: 0.8 },
       OPP: { x: 3.6, y: 5.6 },
       OH2: { x: 1.6, y: 6.6 },
       L: { x: 6.2, y: 6.6 },
     },
     passers: ['OH2', 'OPP', 'L'],
     serveTo: 'OPP',
+    // OH1 loops behind the middle's approach spot rather than cutting through it.
+    routes: { OH1: { x: 4.0, y: 3.7 } },
     notes: {
       S: 'Zone 1, right behind OH1 at the net. Must stay behind OH1 and right of the libero. Two steps to target.',
       OH1: 'Front row, zone 2. Hides at the net on the right so the setter can stack behind. Not passing. After contact crosses to the left to attack; some teams let OH1 hit from the right here to skip the long run.',
@@ -299,13 +309,13 @@ const OPPOSITE_PASSES: Partial<Record<RotationNumber, RawRotation>> = {
       OPP: { x: 4.8, y: 4.6 },
       MB1: { x: 7.8, y: 0.9 },
       L: { x: 2.2, y: 6.8 },
-      S: { x: 5.4, y: 5.4 },
+      S: { x: 5.7, y: 5.4 },
       OH1: { x: 7.4, y: 6.6 },
     },
     passers: ['L', 'OPP', 'OH1'],
     serveTo: 'OPP',
     notes: {
-      S: 'Zone 6. Must stay behind the opposite and between the libero and OH1. Lines up right behind the opposite’s heels; the run to target starts the moment the ball is served.',
+      S: 'Zone 6. Must stay behind the opposite and between the libero and OH1. Lines up just behind and to the right of the opposite, out of the passing lane; the run to target starts the moment the ball is served.',
       OPP: 'Front-row passer, zone 3. Must stay right of OH2, left of the middle and ahead of the setter. Takes short serves in the middle, then transitions to the right side.',
       MB1: 'Right front. Waits at the net on the right and swings into the middle for a quick after contact.',
       OH2: 'Left front. Not passing: waits near the attack line and attacks from the left.',
@@ -334,7 +344,7 @@ const OPPOSITE_PASSES: Partial<Record<RotationNumber, RawRotation>> = {
       S: 'Zone 5. Must stay behind MB2 and left of OH1. Stacking at the net turns a long diagonal run into a straight sprint along the net.',
       MB2: 'Left front. Stands tight to the net so the setter can stack behind. Swings into the middle after contact.',
       OH2: 'Middle front, zone 3, but waiting on the left near the attack line. Must stay right of the middle, left of the opposite and ahead of OH1. Not passing: attacks from the left.',
-      OPP: 'Front-row passer, zone 2. Must stay right of OH2 and ahead of the libero. Passes on the right, then steps off the net to attack from the right.',
+      OPP: 'Front-row passer, zone 2. Must stay right of OH2 and ahead of the libero. Passes on the right, then approaches to attack from the right side.',
       OH1: 'Left passer from zone 6. Must stay behind OH2 and between the setter and the libero.',
       L: 'Middle passer, in for MB1 in zone 1. Must stay behind the opposite and right of OH1.',
     },
@@ -369,6 +379,7 @@ export function receiveFormation(
     const frontRow = isFrontRow(zone)
     const pre = raw.preServe[id]
     if (!pre) throw new Error(`Rotation ${n}: no pre-serve position for ${id}`)
+    const passer = raw.passers.includes(id)
     let release = pre
     let attack = pre
     if (spec.role === 'S') {
@@ -384,12 +395,16 @@ export function receiveFormation(
       release = RIGHT_APPROACH
       attack = RIGHT_ATTACK
     }
+    // A front-row passer cannot release at contact: they hold their passing
+    // spot until the ball is up, then go straight from there to attack.
+    if (passer) release = pre
     return {
       spec,
       zone,
       frontRow,
-      passer: raw.passers.includes(id),
+      passer,
       phases: [pre, release, release, attack],
+      releaseVia: raw.routes?.[id],
       note: raw.notes[id] ?? '',
     }
   })
