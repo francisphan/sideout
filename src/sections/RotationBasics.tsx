@@ -1,5 +1,6 @@
 import { useState } from 'react'
-import Court, { type CourtPath, type CourtPlayer } from '../components/Court'
+import CourtView from '../components/CourtView'
+import type { CourtViewMode, CourtPath, CourtPlayer } from '../components/courtTypes'
 import Legend from '../components/Legend'
 import { ZONE_HOME, ZONE_NAME, type Pos, type Zone } from '../data/court'
 import { FRONT_BACK_PAIRS, LEFT_RIGHT_PAIRS, overlapViolations } from '../data/overlap'
@@ -12,7 +13,7 @@ function homeFor(zones: Record<string, Zone>): Record<string, Pos> {
   return out
 }
 
-export default function RotationBasics() {
+export default function RotationBasics({ view }: { view: CourtViewMode }) {
   const [rotation, setRotation] = useState<RotationNumber>(1)
   const [positions, setPositions] = useState<Record<string, Pos>>(() =>
     homeFor(lineupZones(1)),
@@ -49,6 +50,7 @@ export default function RotationBasics() {
       fill: role.color,
       text: role.text,
       flagged: badZones.has(z),
+      pose: 'stand',
       tooltip: {
         title: `${spec.label}, ${role.name.toLowerCase()}`,
         subtitle: `${ZONE_NAME[z]} (zone ${z})${serving ? ', serves next' : ''}`,
@@ -85,7 +87,8 @@ export default function RotationBasics() {
           </div>
         </div>
 
-        <Court
+        <CourtView
+          view={view}
           players={players}
           paths={paths}
           showZones

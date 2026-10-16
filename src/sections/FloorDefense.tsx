@@ -1,7 +1,8 @@
 import { useState } from 'react'
-import Court, { type BlockShadow, type CourtPath, type CourtPlayer } from '../components/Court'
+import CourtView from '../components/CourtView'
+import type { CourtViewMode, Ball, BlockShadow, CourtPath, CourtPlayer } from '../components/courtTypes'
 import Segmented from '../components/Segmented'
-import { ZONES, ZONE_NAME, type Pos } from '../data/court'
+import { isFrontRow, ZONES, ZONE_NAME, type Pos } from '../data/court'
 import {
   ATTACKER,
   BLOCK_REACH,
@@ -20,7 +21,7 @@ import {
 const TEAM = '#1F3A5F'
 const THEIR_SETTER: Pos = { x: 5.3, y: -1.6 }
 
-export default function FloorDefense() {
+export default function FloorDefense({ view }: { view: CourtViewMode }) {
   const [system, setSystem] = useState<DefenseSystem>('perimeter')
   const [origin, setOrigin] = useState<AttackOrigin>('right')
   const [read, setRead] = useState(false)
@@ -40,6 +41,7 @@ export default function FloorDefense() {
       fill: TEAM,
       text: '#FFFFFF',
       ring: blocking,
+      pose: read ? (blocking ? 'block' : 'ready') : isFrontRow(z) ? 'blockReady' : 'ready',
       tooltip: {
         title: `${ZONE_NAME[z]} (zone ${z})`,
         subtitle: read ? (blocking ? 'Blocking' : 'Defending') : 'Base position',
@@ -55,6 +57,7 @@ export default function FloorDefense() {
       fill: '#F3F4F1',
       text: '#15202B',
       muted: true,
+      pose: 'set',
       tooltip: {
         title: 'Their setter',
         body: 'Watch the setter’s hands, not the ball. Where the set goes tells you where to move.',
@@ -67,11 +70,14 @@ export default function FloorDefense() {
       fill: '#F3F4F1',
       text: '#15202B',
       muted: true,
+      pose: read ? 'hit' : 'stand',
       tooltip: { title: 'Their hitter', subtitle: ORIGIN_LABEL[origin], body: ORIGIN_BLURB[origin] },
     },
   )
 
-  const ball = read ? ATTACKER[origin] : THEIR_SETTER
+  const ball: Ball = read
+    ? { x: ATTACKER[origin].x, y: ATTACKER[origin].y + 0.5, z: 2.95 }
+    : { ...THEIR_SETTER, z: 2.2 }
 
   const paths: CourtPath[] = []
   let shadow: BlockShadow | null = null
@@ -126,7 +132,8 @@ export default function FloorDefense() {
             : 'Hold base until the set shows who is hitting, then move to the read spot. Moving early is how tips and angles get through.'}
         </p>
 
-        <Court
+        <CourtView
+          view={view}
           players={players}
           ball={ball}
           paths={paths}

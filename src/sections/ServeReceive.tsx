@@ -1,22 +1,47 @@
 import { useEffect, useState } from 'react'
-import Court, { type CourtPath, type CourtPlayer } from '../components/Court'
+import CourtView from '../components/CourtView'
+import type { CourtViewMode, Ball, CourtPath, CourtPlayer } from '../components/courtTypes'
 import Legend from '../components/Legend'
 import RotationDial from '../components/RotationDial'
 import { COURT, ZONE_NAME, type Pos, type Zone } from '../data/court'
 import { FRONT_BACK_PAIRS, LEFT_RIGHT_PAIRS } from '../data/overlap'
 import { ROLES } from '../data/roles'
+import type { PoseName } from '../data/poses'
 import {
   RECEIVE_PHASES,
   receiveFormation,
   TARGET,
+  type ReceiveFormation,
   type ReceivePhase,
+  type ReceivePlayer,
   type RotationNumber,
 } from '../data/rotations'
 
 /** The server is 9 m past the net; we draw the ball entering from the top edge. */
 const SERVER: Pos = { x: 6.2, y: -(COURT.farDepth + 0.3) }
 
-export default function ServeReceive() {
+function samePos(a: Pos, b: Pos) {
+  return a.x === b.x && a.y === b.y
+}
+
+/** What each silhouette is doing in a given phase. */
+function poseFor(p: ReceivePlayer, phase: ReceivePhase, f: ReceiveFormation): PoseName {
+  const isSetter = p.spec.role === 'S'
+  if (phase === 0) return p.passer ? 'ready' : 'stand'
+  if (phase === 1) {
+    if (!samePos(p.phases[0], p.phases[1])) return 'run'
+    return p.passer ? 'ready' : 'stand'
+  }
+  if (phase === 2) {
+    if (p.spec.id === f.serveTo) return 'pass'
+    return isSetter ? 'set' : 'ready'
+  }
+  if (isSetter) return 'set'
+  if (p.spec.id === f.setTo) return 'hit'
+  return 'ready'
+}
+
+export default function ServeReceive({ view }: { view: CourtViewMode }) {
   const [rotation, setRotation] = useState<RotationNumber>(1)
   const [phase, setPhase] = useState<ReceivePhase>(0)
   const [playing, setPlaying] = useState(false)
@@ -55,17 +80,19 @@ export default function ServeReceive() {
       fill: role.color,
       text: role.text,
       tooltip: { title: `${p.spec.label}, ${role.name.toLowerCase()}`, subtitle: where, body: p.note },
+      pose: poseFor(p, phase, formation),
     }
   })
 
   const passer = byId.get(formation.serveTo)!
   const hitter = byId.get(formation.setTo)!
-  // The ball sits just in front of whoever has it, so it never covers a player.
-  const ballByPhase: Pos[] = [
-    SERVER,
-    { x: passer.phases[1].x, y: passer.phases[1].y - 0.65 },
-    { x: TARGET.x, y: TARGET.y - 0.55 },
-    { x: hitter.phases[3].x + 0.55, y: hitter.phases[3].y - 0.5 },
+  // The ball sits just in front of whoever has it, so it never covers a player,
+  // and at the height of the contact: platform, setter's hands, hitting point.
+  const ballByPhase: Ball[] = [
+    { ...SERVER, z: 2.4 },
+    { x: passer.phases[1].x, y: passer.phases[1].y - 0.65, z: 0.8 },
+    { x: TARGET.x, y: TARGET.y - 0.55, z: 2.3 },
+    { x: hitter.phases[3].x + 0.55, y: hitter.phases[3].y - 0.5, z: 2.9 },
   ]
   const ball = ballByPhase[phase]
 
@@ -123,7 +150,8 @@ export default function ServeReceive() {
         </div>
         <p className="phase-blurb">{phaseInfo.blurb}</p>
 
-        <Court
+        <CourtView
+          view={view}
           players={players}
           ball={ball}
           paths={paths}

@@ -1,58 +1,8 @@
-import {
-  useId,
-  useRef,
-  useState,
-  type KeyboardEvent,
-  type PointerEvent,
-  type ReactNode,
-} from 'react'
+import { useId, useRef, type PointerEvent } from 'react'
 import { COURT, ZONE_LABEL, ZONES, type Pos } from '../data/court'
-
-export interface CourtPlayer {
-  id: string
-  pos: Pos
-  label: string
-  fill: string
-  text: string
-  stroke?: string
-  tooltip: { title: string; subtitle?: string; body: string }
-  /** Drawn with a warning ring, e.g. an overlap violation. */
-  flagged?: boolean
-  /** Drawn with a highlight ring, e.g. a blocker. */
-  ring?: boolean
-  /** Lower-contrast player, e.g. an opponent. */
-  muted?: boolean
-}
-
-export type PathKind = 'move' | 'ball' | 'overlap' | 'overlap-bad' | 'shot'
-
-export interface CourtPath {
-  id: string
-  from: Pos
-  to: Pos
-  kind: PathKind
-  label?: string
-}
-
-export interface BlockShadow {
-  apex: Pos
-  x1: number
-  x2: number
-  y: number
-}
-
-export interface CourtProps {
-  players: CourtPlayer[]
-  ball?: Pos | null
-  paths?: CourtPath[]
-  shadow?: BlockShadow | null
-  showZones?: boolean
-  draggable?: boolean
-  onDrag?: (id: string, pos: Pos) => void
-  selectedId?: string | null
-  onSelect?: (id: string | null) => void
-  children?: ReactNode
-}
+import CourtTip from './CourtTip'
+import type { CourtProps } from './courtTypes'
+import { usePlayerInteraction } from './usePlayerInteraction'
 
 const TOP_PAD = 0.7
 const BOTTOM_PAD = 1.0
@@ -69,6 +19,7 @@ function clamp(v: number, lo: number, hi: number) {
   return Math.min(hi, Math.max(lo, v))
 }
 
+/** The whiteboard view: our side of the court from straight above, net at the top. */
 export default function Court({
   players,
   ball,
@@ -79,17 +30,11 @@ export default function Court({
   onDrag,
   selectedId,
   onSelect,
-  children,
 }: CourtProps) {
   const svgRef = useRef<SVGSVGElement>(null)
   const uid = useId()
-  const [hoverId, setHoverId] = useState<string | null>(null)
-  const [dragId, setDragId] = useState<string | null>(null)
 
-  const activeId = dragId ?? hoverId ?? selectedId ?? null
-  const active = players.find((p) => p.id === activeId) ?? null
-
-  function toCourt(e: PointerEvent): Pos | null {
+  function toCourt(e: PointerEvent<SVGGElement>): Pos | null {
     const svg = svgRef.current
     if (!svg) return null
     const ctm = svg.getScreenCTM()
@@ -101,38 +46,18 @@ export default function Court({
     }
   }
 
-  function onPointerDown(e: PointerEvent<SVGGElement>, id: string) {
-    if (!draggable) return
-    e.currentTarget.setPointerCapture(e.pointerId)
-    setDragId(id)
-  }
-  function onPointerMove(e: PointerEvent<SVGGElement>, id: string) {
-    if (dragId !== id) return
-    const pos = toCourt(e)
-    if (pos) onDrag?.(id, pos)
-  }
-  function onPointerUp(e: PointerEvent<SVGGElement>) {
-    if (dragId === null) return
-    e.currentTarget.releasePointerCapture(e.pointerId)
-    setDragId(null)
-  }
-
-  function onKey(e: KeyboardEvent<SVGGElement>, id: string) {
-    if (e.key === 'Escape') onSelect?.(null)
-    if (e.key === 'Enter' || e.key === ' ') {
-      e.preventDefault()
-      onSelect?.(selectedId === id ? null : id)
-    }
-  }
+  const { hoverId, dragId, handlersFor } = usePlayerInteraction({
+    draggable,
+    onDrag,
+    onSelect,
+    selectedId,
+    toCourt,
+  })
+  const activeId = dragId ?? hoverId ?? selectedId ?? null
+  const active = players.find((p) => p.id === activeId) ?? null
 
   const arrowId = `${uid}-arrow`
   const clipId = `${uid}-clip`
-
-  // Tooltip placement in percentages of the SVG box, flipped away from edges.
-  const tipLeft = active ? ((active.pos.x - VB.minX) / VB.width) * 100 : 0
-  const tipTop = active ? ((active.pos.y - VB.minY) / VB.height) * 100 : 0
-  const tipRight = active ? active.pos.x > COURT.width / 2 : false
-  const tipBelow = active ? active.pos.y < 3.2 : false
 
   let shadowPoints: string | null = null
   if (shadow) {
@@ -156,7 +81,7 @@ export default function Court({
         className={`court${draggable ? ' court-draggable' : ''}`}
         viewBox={`${VB.minX} ${VB.minY} ${VB.width} ${VB.height}`}
         role="img"
-        aria-label="Volleyball court, seen from behind our own endline"
+        aria-label="Volleyball court from above, seen from behind our own endline"
       >
         <defs>
           <marker
@@ -175,18 +100,9 @@ export default function Court({
           </clipPath>
         </defs>
 
-        {/* Free zone */}
-        <rect
-          x={VB.minX}
-          y={VB.minY}
-          width={VB.width}
-          height={VB.height}
-          className="court-freezone"
-        />
-        {/* Opponent's side, dimmed */}
+        <rect x={VB.minX} y={VB.minY} width={VB.width} height={VB.height} className="court-freezone" />
         <rect x={0} y={-COURT.farDepth} width={COURT.width} height={COURT.farDepth} className="court-floor" />
         <rect x={0} y={-COURT.farDepth} width={COURT.width} height={COURT.farDepth} className="court-far" />
-        {/* Our side */}
         <rect x={0} y={0} width={COURT.width} height={COURT.depth} className="court-floor" />
 
         {showZones &&
@@ -207,19 +123,15 @@ export default function Court({
           <polygon points={shadowPoints} className="court-shadow" clipPath={`url(#${clipId})`} />
         )}
 
-        {/* Lines */}
         <g className="court-lines">
           <rect x={0} y={0} width={COURT.width} height={COURT.depth} />
           <line x1={0} y1={COURT.attackLine} x2={COURT.width} y2={COURT.attackLine} />
           <line x1={0} y1={-COURT.farDepth} x2={0} y2={0} />
           <line x1={COURT.width} y1={-COURT.farDepth} x2={COURT.width} y2={0} />
         </g>
-        {/* Net and antennas */}
         <line x1={-0.9} y1={0} x2={COURT.width + 0.9} y2={0} className="court-net" />
         <line x1={0} y1={-0.45} x2={0} y2={0.45} className="court-antenna" />
         <line x1={COURT.width} y1={-0.45} x2={COURT.width} y2={0.45} className="court-antenna" />
-
-        {children}
 
         {paths.map((p) => {
           if (p.kind === 'move' && p.from.x === p.to.x && p.from.y === p.to.y) return null
@@ -262,16 +174,7 @@ export default function Court({
               tabIndex={0}
               role="button"
               aria-label={`${p.tooltip.title}. ${p.tooltip.body}`}
-              onPointerEnter={() => setHoverId(p.id)}
-              onPointerLeave={() => setHoverId((h) => (h === p.id ? null : h))}
-              onPointerDown={(e) => onPointerDown(e, p.id)}
-              onPointerMove={(e) => onPointerMove(e, p.id)}
-              onPointerUp={onPointerUp}
-              onPointerCancel={onPointerUp}
-              onClick={() => onSelect?.(selectedId === p.id ? null : p.id)}
-              onFocus={() => setHoverId(p.id)}
-              onBlur={() => setHoverId((h) => (h === p.id ? null : h))}
-              onKeyDown={(e) => onKey(e, p.id)}
+              {...handlersFor(p.id)}
             >
               <circle r={R + 0.14} className="player-halo" />
               <circle r={R} fill={p.fill} stroke={p.stroke ?? '#15202B'} strokeWidth={0.07} />
@@ -298,15 +201,13 @@ export default function Court({
       </svg>
 
       {active && (
-        <div
-          className={`court-tip${tipRight ? ' court-tip-right' : ''}${tipBelow ? ' court-tip-below' : ''}`}
-          style={{ left: `${tipLeft}%`, top: `${tipTop}%` }}
-          role="status"
-        >
-          <strong>{active.tooltip.title}</strong>
-          {active.tooltip.subtitle && <span className="court-tip-sub">{active.tooltip.subtitle}</span>}
-          <p>{active.tooltip.body}</p>
-        </div>
+        <CourtTip
+          {...active.tooltip}
+          left={((active.pos.x - VB.minX) / VB.width) * 100}
+          top={((active.pos.y - VB.minY) / VB.height) * 100}
+          flipX={active.pos.x > COURT.width / 2}
+          below={active.pos.y < 3.2}
+        />
       )}
     </div>
   )

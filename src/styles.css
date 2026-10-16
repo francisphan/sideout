@@ -84,9 +84,44 @@ body {
 .tabs {
   display: flex;
   flex-wrap: wrap;
+  align-items: center;
   gap: 2px;
   margin: 10px 0 22px;
   border-bottom: 1px solid var(--rule);
+}
+
+.view-switch {
+  margin: 0 0 6px auto;
+}
+
+.seg-compact {
+  gap: 0;
+  border: 2px solid var(--ink);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.seg-compact .seg-btn {
+  min-width: 0;
+  border: 0;
+  border-radius: 0;
+  padding: 5px 12px;
+}
+
+.seg-compact .seg-btn span {
+  font-size: 17px;
+}
+
+@media (max-width: 600px) {
+  .view-switch {
+    margin: 6px 0 8px;
+    width: 100%;
+  }
+
+  .view-switch .seg-btn {
+    flex: 1;
+    align-items: center;
+  }
 }
 
 .tab {
@@ -117,7 +152,7 @@ body {
 
 .lesson {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(300px, 1fr);
+  grid-template-columns: minmax(0, 1.18fr) minmax(300px, 0.82fr);
   gap: 32px;
   align-items: start;
 }
@@ -304,6 +339,141 @@ body {
   paint-order: stroke;
   stroke: rgba(21, 32, 43, 0.5);
   stroke-width: 0.12px;
+}
+
+/* Perspective view */
+
+.court3d .court-lines polygon,
+.court3d .court-lines line {
+  fill: none;
+  stroke: var(--court-line);
+  stroke-width: 3;
+}
+
+.court3d-zone {
+  font-family: var(--font-display);
+  font-weight: 800;
+  fill: rgba(255, 246, 232, 0.4);
+  pointer-events: none;
+}
+
+.court3d .court-path line {
+  stroke-width: 3;
+}
+
+.court3d .court-path-move line {
+  stroke-dasharray: 12 8;
+}
+
+.court3d .court-path-ball line {
+  stroke-width: 3;
+  stroke-dasharray: 4 9;
+}
+
+.court3d .court-path-overlap line {
+  stroke-width: 2.5;
+  stroke-dasharray: 9 7;
+}
+
+.court3d .court-path-overlap-bad line {
+  stroke-width: 5;
+}
+
+.court3d .court-path-shot line {
+  stroke-width: 2.5;
+  stroke-dasharray: 10 9;
+}
+
+.court3d .court-path-label {
+  font-size: 30px;
+  stroke-width: 8px;
+}
+
+.net-mesh {
+  fill: rgba(255, 255, 255, 0.2);
+}
+
+.net-line {
+  stroke: rgba(255, 255, 255, 0.45);
+  stroke-width: 1.2;
+}
+
+.net-tape {
+  stroke: #fff;
+  stroke-width: 5;
+  stroke-linecap: round;
+}
+
+.net-post {
+  stroke: var(--ink);
+  stroke-width: 7;
+  stroke-linecap: round;
+}
+
+.antenna-base {
+  stroke: #fff;
+  stroke-width: 3.5;
+  stroke-linecap: round;
+}
+
+.antenna-red {
+  stroke: #e8352b;
+  stroke-width: 3.5;
+  stroke-dasharray: 9 9;
+}
+
+.figure-shadow {
+  fill: rgba(21, 32, 43, 0.3);
+}
+
+.figure-ring {
+  fill: none;
+  stroke: #fff;
+  stroke-width: 0.06;
+  opacity: 0;
+  transition: opacity 150ms;
+}
+
+.player-active .figure-ring,
+.player:focus-visible .figure-ring {
+  opacity: 1;
+}
+
+.player-ring .figure-ring {
+  opacity: 1;
+  stroke: var(--gold);
+  stroke-width: 0.09;
+}
+
+.player-flagged .figure-ring {
+  opacity: 1;
+  stroke: var(--red);
+  stroke-width: 0.09;
+}
+
+.figure,
+.figure path,
+.figure g,
+.figure-tag {
+  transition:
+    d 450ms var(--ease),
+    transform 450ms var(--ease);
+}
+
+.figure-tag text {
+  font-family: var(--font-display);
+  font-weight: 700;
+  pointer-events: none;
+  user-select: none;
+}
+
+.ball-shadow {
+  transition: transform 900ms cubic-bezier(0.4, 0, 0.2, 1);
+  pointer-events: none;
+}
+
+.ball-shadow ellipse {
+  fill: rgba(21, 32, 43, 0.32);
 }
 
 /* Players and ball */
@@ -766,7 +936,13 @@ body {
 @media (prefers-reduced-motion: reduce) {
   .player,
   .ball,
-  .player-halo {
+  .ball-shadow,
+  .player-halo,
+  .figure,
+  .figure path,
+  .figure g,
+  .figure-tag,
+  .figure-ring {
     transition: none;
   }
 }

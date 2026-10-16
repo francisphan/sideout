@@ -18,6 +18,16 @@ describe('App', () => {
     expect(screen.getByText(/block shadow/)).toBeInTheDocument()
   })
 
+  it('switches between the perspective and whiteboard views', async () => {
+    render(<App />)
+    expect(screen.getByRole('img', { name: /in perspective/ })).toBeInTheDocument()
+    await userEvent.click(screen.getByRole('radio', { name: 'Whiteboard' }))
+    expect(screen.getByRole('img', { name: /from above/ })).toBeInTheDocument()
+    expect(window.localStorage.getItem('sideout.view')).toBe('top')
+    await userEvent.click(screen.getByRole('radio', { name: 'Perspective' }))
+    expect(screen.getByRole('img', { name: /in perspective/ })).toBeInTheDocument()
+  })
+
   it('steps serve receive through its phases', async () => {
     window.location.hash = '#receive'
     render(<App />)

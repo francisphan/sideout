@@ -9,11 +9,18 @@ interface Props<T extends string> {
   value: T
   options: Option<T>[]
   onChange: (v: T) => void
+  className?: string
 }
 
-export default function Segmented<T extends string>({ label, value, options, onChange }: Props<T>) {
+export default function Segmented<T extends string>({
+  label,
+  value,
+  options,
+  onChange,
+  className,
+}: Props<T>) {
   return (
-    <div className="seg" role="radiogroup" aria-label={label}>
+    <div className={`seg${className ? ` ${className}` : ''}`} role="radiogroup" aria-label={label}>
       {options.map((o) => (
         <button
           key={o.value}
