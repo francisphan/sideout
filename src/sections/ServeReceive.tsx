@@ -3,14 +3,17 @@ import CourtView from '../components/CourtView'
 import type { CourtViewMode, Ball, CourtPath, CourtPlayer } from '../components/courtTypes'
 import Legend from '../components/Legend'
 import RotationDial from '../components/RotationDial'
+import Segmented from '../components/Segmented'
 import { COURT, ZONE_NAME, type Pos, type Zone } from '../data/court'
 import { FRONT_BACK_PAIRS, LEFT_RIGHT_PAIRS } from '../data/overlap'
 import { ROLES } from '../data/roles'
 import type { PoseName } from '../data/poses'
 import {
+  FRONT_ROW_PASSERS,
   RECEIVE_PHASES,
   receiveFormation,
   TARGET,
+  type FrontRowPasser,
   type ReceiveFormation,
   type ReceivePhase,
   type ReceivePlayer,
@@ -47,8 +50,9 @@ export default function ServeReceive({ view }: { view: CourtViewMode }) {
   const [playing, setPlaying] = useState(false)
   const [showOverlap, setShowOverlap] = useState(true)
   const [selected, setSelected] = useState<string | null>(null)
+  const [frontRowPasser, setFrontRowPasser] = useState<FrontRowPasser>('opposite')
 
-  const formation = receiveFormation(rotation)
+  const formation = receiveFormation(rotation, frontRowPasser)
 
   useEffect(() => {
     if (!playing) return
@@ -178,6 +182,22 @@ export default function ServeReceive({ view }: { view: CourtViewMode }) {
             Side-out: rotate
           </button>
         </div>
+
+        <h3>Who passes when the setter is back row</h3>
+        <Segmented
+          label="Front-row passer in rotations 1 to 3"
+          value={frontRowPasser}
+          onChange={(v) => {
+            setFrontRowPasser(v)
+            setSelected(null)
+          }}
+          options={FRONT_ROW_PASSERS}
+        />
+        <p className="hint">
+          Two back-row players and the libero are never enough on their own: when the setter is back
+          row, one front-row hitter must pass too. In rotations 4 to 6 the opposite is back row and
+          passes either way.
+        </p>
 
         <h3>
           Rotation {formation.n}, {formation.title.toLowerCase()}

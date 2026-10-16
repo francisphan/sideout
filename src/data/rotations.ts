@@ -87,7 +87,20 @@ interface RawRotation {
   notes: Record<string, string>
 }
 
-const RAW: Record<RotationNumber, RawRotation> = {
+/**
+ * Who passes when the setter is back row (rotations 1 to 3) and one front-row
+ * player has to join the two back-row passers: the opposite, or the outside.
+ * In rotations 4 to 6 the opposite is back row and passes either way.
+ */
+export type FrontRowPasser = 'opposite' | 'outside'
+
+export const FRONT_ROW_PASSERS: { value: FrontRowPasser; label: string; hint: string }[] = [
+  { value: 'opposite', label: 'Opposite', hint: 'Outside stays free to attack' },
+  { value: 'outside', label: 'Outside hitter', hint: 'Opposite hides at the net' },
+]
+
+/** Formations where the front-row outside passes and the opposite hides at the net. */
+const OUTSIDE_PASSES: Record<RotationNumber, RawRotation> = {
   1: {
     summary:
       'The setter is in right back, so the opposite, a middle and OH1 are front row. OH1 passes on the right with the setter tucked in behind on the sideline. After contact the setter sprints to target, OH1 swings out to the left and the opposite runs the net to the right side.',
@@ -246,6 +259,93 @@ const RAW: Record<RotationNumber, RawRotation> = {
   },
 }
 
+/** Rotations 1 to 3 with the opposite passing instead of the front-row outside. */
+const OPPOSITE_PASSES: Partial<Record<RotationNumber, RawRotation>> = {
+  1: {
+    summary:
+      'The setter is in right back. OH1 hides at the net on the right with the setter tucked in right behind, which makes this the shortest setter run of the back-row rotations. The opposite passes in the middle with OH2 on the left and the libero on the right. After contact the opposite swings to the right side and OH1 crosses to the left to hit.',
+    watch: [
+      'Setter stepping ahead of OH1 at the net. Zone 1 must stay behind zone 2.',
+      'Opposite drifting right of the middle. Zone 4 must stay left of zone 3.',
+    ],
+    preServe: {
+      OH1: { x: 7.6, y: 1.0 },
+      S: { x: 8.1, y: 2.1 },
+      MB1: { x: 5.8, y: 0.8 },
+      OPP: { x: 3.6, y: 5.6 },
+      OH2: { x: 1.6, y: 6.6 },
+      L: { x: 6.2, y: 6.6 },
+    },
+    passers: ['OH2', 'OPP', 'L'],
+    serveTo: 'OPP',
+    notes: {
+      S: 'Zone 1, right behind OH1 at the net. Must stay behind OH1 and right of the libero. Two steps to target.',
+      OH1: 'Front row, zone 2. Hides at the net on the right so the setter can stack behind. Not passing. After contact crosses to the left to attack; some teams let OH1 hit from the right here to skip the long run.',
+      MB1: 'At the net in the middle, out of the passers’ way. Must stay right of the opposite. Steps off after contact for a quick set.',
+      OPP: 'Front-row passer, zone 4. Must stay left of the middle and ahead of OH2. Passes in the middle of the court, then transitions to the right side to attack.',
+      OH2: 'Left passer from zone 5. Must stay left of the libero and behind the opposite.',
+      L: 'Right passer, in for MB2 in zone 6. Must stay right of OH2 and left of the setter.',
+    },
+  },
+  2: {
+    summary:
+      'The setter is in middle back and must stay behind the opposite, who passes short in the middle. That keeps the setter deeper than when the outside passes, so the run to target is longer. OH2 waits at the attack line on the left, the libero passes left and OH1 right.',
+    watch: [
+      'Setter stepping ahead of the opposite. Zone 6 must stay behind zone 3.',
+      'OH2 drifting right of the opposite while waiting. Zone 4 must stay left of zone 3.',
+    ],
+    preServe: {
+      OH2: { x: 1.2, y: 3.2 },
+      OPP: { x: 4.8, y: 4.6 },
+      MB1: { x: 7.8, y: 0.9 },
+      L: { x: 2.2, y: 6.8 },
+      S: { x: 5.4, y: 5.4 },
+      OH1: { x: 7.4, y: 6.6 },
+    },
+    passers: ['L', 'OPP', 'OH1'],
+    serveTo: 'OPP',
+    notes: {
+      S: 'Zone 6. Must stay behind the opposite and between the libero and OH1. Lines up right behind the opposite’s heels; the run to target starts the moment the ball is served.',
+      OPP: 'Front-row passer, zone 3. Must stay right of OH2, left of the middle and ahead of the setter. Takes short serves in the middle, then transitions to the right side.',
+      MB1: 'Right front. Waits at the net on the right and swings into the middle for a quick after contact.',
+      OH2: 'Left front. Not passing: waits near the attack line and attacks from the left.',
+      L: 'Left passer, in for MB2 in zone 5. Must stay left of the setter and behind OH2.',
+      OH1: 'Right passer from zone 1. Must stay behind the middle and right of the setter.',
+    },
+  },
+  3: {
+    summary:
+      'The setter stacks behind the middle at the left of the net and sprints along the net after contact. The opposite passes on the right, OH1 on the left and the libero deep in the middle, while OH2 waits at the attack line to hit.',
+    watch: [
+      'Setter standing ahead of the middle. Zone 5 must stay behind zone 4.',
+      'Libero stepping ahead of the opposite. Zone 1 must stay behind zone 2.',
+    ],
+    preServe: {
+      MB2: { x: 0.9, y: 0.7 },
+      S: { x: 1.4, y: 1.9 },
+      OH2: { x: 2.6, y: 3.2 },
+      OPP: { x: 7.4, y: 5.4 },
+      OH1: { x: 3.2, y: 6.6 },
+      L: { x: 5.6, y: 7.2 },
+    },
+    passers: ['OH1', 'L', 'OPP'],
+    serveTo: 'L',
+    notes: {
+      S: 'Zone 5. Must stay behind MB2 and left of OH1. Stacking at the net turns a long diagonal run into a straight sprint along the net.',
+      MB2: 'Left front. Stands tight to the net so the setter can stack behind. Swings into the middle after contact.',
+      OH2: 'Middle front, zone 3, but waiting on the left near the attack line. Must stay right of the middle, left of the opposite and ahead of OH1. Not passing: attacks from the left.',
+      OPP: 'Front-row passer, zone 2. Must stay right of OH2 and ahead of the libero. Passes on the right, then steps off the net to attack from the right.',
+      OH1: 'Left passer from zone 6. Must stay behind OH2 and between the setter and the libero.',
+      L: 'Middle passer, in for MB1 in zone 1. Must stay behind the opposite and right of OH1.',
+    },
+  },
+}
+
+function rawFor(n: RotationNumber, passer: FrontRowPasser): RawRotation {
+  if (passer === 'opposite') return OPPOSITE_PASSES[n] ?? OUTSIDE_PASSES[n]
+  return OUTSIDE_PASSES[n]
+}
+
 /** The players on court in serve receive: the lineup with the libero in for the back-row middle. */
 export function receiveZones(n: RotationNumber): Record<string, Zone> {
   const zones = lineupZones(n)
@@ -258,8 +358,11 @@ export function receiveZones(n: RotationNumber): Record<string, Zone> {
   return out
 }
 
-export function receiveFormation(n: RotationNumber): ReceiveFormation {
-  const raw = RAW[n]
+export function receiveFormation(
+  n: RotationNumber,
+  passer: FrontRowPasser = 'opposite',
+): ReceiveFormation {
+  const raw = rawFor(n, passer)
   const zones = receiveZones(n)
   const players: ReceivePlayer[] = Object.entries(zones).map(([id, zone]) => {
     const spec = specFor(id)

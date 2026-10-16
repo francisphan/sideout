@@ -3,6 +3,7 @@ import { COURT, ZONE_LABEL, ZONES, type Pos } from '../data/court'
 import { POSES, poseTop } from '../data/poses'
 import CourtTip from './CourtTip'
 import Figure from './Figure'
+import Volleyball from './Volleyball'
 import type { Ball, CourtPlayer, CourtProps } from './courtTypes'
 import { polygon, project, SCENE, unproject, VIEW, type P3 } from './projection'
 import { usePlayerInteraction } from './usePlayerInteraction'
@@ -56,12 +57,10 @@ function Ball3D({ ball }: { ball: Ball }) {
   return (
     <>
       <g className="ball-shadow" style={{ transform: `translate(${g.sx}px, ${g.sy}px) scale(${g.k})` }}>
-        <ellipse rx={0.22} ry={0.08} />
+        <ellipse rx={0.3} ry={0.11} />
       </g>
       <g className="ball" style={{ transform: `translate(${b.sx}px, ${b.sy}px) scale(${b.k})` }}>
-        <circle r={0.21} />
-        <path d="M -0.16 -0.11 Q 0 0.02 0.18 -0.08" />
-        <path d="M -0.13 0.13 Q 0.03 0.02 0.16 0.14" />
+        <Volleyball r={0.32} />
       </g>
     </>
   )

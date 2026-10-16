@@ -1,6 +1,7 @@
 import { useId, useRef, type PointerEvent } from 'react'
 import { COURT, ZONE_LABEL, ZONES, type Pos } from '../data/court'
 import CourtTip from './CourtTip'
+import Volleyball from './Volleyball'
 import type { CourtProps } from './courtTypes'
 import { usePlayerInteraction } from './usePlayerInteraction'
 
@@ -193,9 +194,7 @@ export default function Court({
 
         {ball && (
           <g className="ball" style={{ transform: `translate(${ball.x}px, ${ball.y}px)` }}>
-            <circle r={0.26} />
-            <path d="M -0.2 -0.14 Q 0 0.02 0.22 -0.1" />
-            <path d="M -0.16 0.16 Q 0.04 0.02 0.2 0.18" />
+            <Volleyball r={0.38} />
           </g>
         )}
       </svg>

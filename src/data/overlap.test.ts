@@ -27,10 +27,12 @@ describe('overlapViolations', () => {
     expect(overlapViolations(pos, { serving: true })).toEqual([])
   })
 
-  it.each(ROTATIONS)('rotation %i pre-serve formation is legal', (n) => {
-    const f = receiveFormation(n)
-    const pos = {} as Record<Zone, Pos>
-    for (const p of f.players) pos[p.zone] = p.phases[0]
-    expect(overlapViolations(pos)).toEqual([])
+  it.each(ROTATIONS)('rotation %i pre-serve formation is legal with either front-row passer', (n) => {
+    for (const passer of ['opposite', 'outside'] as const) {
+      const f = receiveFormation(n, passer)
+      const pos = {} as Record<Zone, Pos>
+      for (const p of f.players) pos[p.zone] = p.phases[0]
+      expect(overlapViolations(pos)).toEqual([])
+    }
   })
 })

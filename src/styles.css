@@ -534,18 +534,6 @@ body {
   pointer-events: none;
 }
 
-.ball circle {
-  fill: #fff;
-  stroke: var(--ink);
-  stroke-width: 0.05;
-}
-
-.ball path {
-  fill: none;
-  stroke: var(--ink);
-  stroke-width: 0.04;
-}
-
 /* Tooltip */
 
 .court-tip {

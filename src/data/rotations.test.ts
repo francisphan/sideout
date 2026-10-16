@@ -44,8 +44,27 @@ describe('receiveFormation', () => {
     expect(isFrontRow(zones[mids[0]])).toBe(true)
   })
 
+  it.each(ROTATIONS)('rotation %i: the opposite passes by default', (n) => {
+    const f = receiveFormation(n, 'opposite')
+    expect(f.players.find((p) => p.spec.id === 'OPP')?.passer).toBe(true)
+    expect(f.players.filter((p) => p.passer)).toHaveLength(3)
+    for (const p of f.players) expect(p.note.length).toBeGreaterThan(20)
+  })
+
+  it('with the outside passing, the opposite hides at the net in rotations 1 to 3', () => {
+    for (const n of [1, 2, 3] as const) {
+      const f = receiveFormation(n, 'outside')
+      const opp = f.players.find((p) => p.spec.id === 'OPP')!
+      expect(opp.passer).toBe(false)
+      expect(opp.phases[0].y).toBeLessThan(1.5)
+    }
+    for (const n of [4, 5, 6] as const) {
+      expect(receiveFormation(n, 'outside').players.find((p) => p.spec.id === 'OPP')?.passer).toBe(true)
+    }
+  })
+
   it.each(ROTATIONS)('rotation %i has three passers, a server target and a front-row outside', (n) => {
-    const f = receiveFormation(n)
+    const f = receiveFormation(n, 'outside')
     expect(f.players.filter((p) => p.passer)).toHaveLength(3)
     expect(f.players.find((p) => p.spec.id === f.serveTo)?.passer).toBe(true)
     const hitter = f.players.find((p) => p.spec.id === f.setTo)
