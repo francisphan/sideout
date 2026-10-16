@@ -3,10 +3,11 @@ import CourtView from '../components/CourtView'
 import type { CourtViewMode, Ball, CourtPath, CourtPlayer } from '../components/courtTypes'
 import Legend from '../components/Legend'
 import RotationDial from '../components/RotationDial'
-import { COURT, ZONE_NAME, type Pos, type Zone } from '../data/court'
+import { ZONE_NAME, type Pos, type Zone } from '../data/court'
 import { FRONT_BACK_PAIRS, LEFT_RIGHT_PAIRS } from '../data/overlap'
 import { ROLES } from '../data/roles'
 import type { PoseName } from '../data/poses'
+import { SERVER_Y, SERVER_Z, arrivingBall, serverX } from '../data/serve'
 import {
   RECEIVE_PHASES,
   receiveFormation,
@@ -17,8 +18,8 @@ import {
   type RotationNumber,
 } from '../data/rotations'
 
-/** The server is 9 m past the net; we draw the ball entering from the top edge. */
-const SERVER: Pos = { x: 6.2, y: -(COURT.farDepth + 0.3) }
+/** How high each ball flight peaks above the line between its ends: serve, pass, set. */
+const BALL_ARC = [0, 0.7, 1.2, 0.5]
 
 const OPP_FLAG_KEY = 'sideout.oppositePasses'
 
@@ -110,13 +111,18 @@ export default function ServeReceive({ view }: { view: CourtViewMode }) {
 
   const passer = byId.get(formation.serveTo)!
   const hitter = byId.get(formation.setTo)!
-  // The ball sits just in front of whoever has it, so it never covers a player,
-  // and at the height of the contact: platform, setter's hands, hitting point.
+  // The ball sits beside or just in front of whoever has it, so it never
+  // covers a player, and at the height of the contact: a serve dropping onto
+  // the platform, the setter's hands, the hitting point.
+  const arriving: Ball = arrivingBall(passer.phases[1])
+  const others = formation.players
+    .filter((p) => p.spec.id !== formation.serveTo)
+    .map((p) => p.phases[1])
   const ballByPhase: Ball[] = [
-    { ...SERVER, z: 2.4 },
-    { x: passer.phases[1].x, y: passer.phases[1].y - 0.65, z: 0.8 },
-    { x: TARGET.x, y: TARGET.y - 0.55, z: 2.3 },
-    { x: hitter.phases[3].x + 0.55, y: hitter.phases[3].y - 0.5, z: 2.9 },
+    { x: serverX(arriving, others), y: SERVER_Y, z: SERVER_Z },
+    arriving,
+    { x: TARGET.x, y: TARGET.y - 0.5, z: 2.3 },
+    { x: hitter.phases[3].x + 0.65, y: hitter.phases[3].y - 0.55, z: 2.9 },
   ]
   const ball = ballByPhase[phase]
 
@@ -127,13 +133,20 @@ export default function ServeReceive({ view }: { view: CourtViewMode }) {
     }
   }
   if (phase >= 1) {
-    paths.push({ id: 'ball', from: ballByPhase[phase - 1], to: ball, kind: 'ball' })
+    paths.push({
+      id: 'ball',
+      from: ballByPhase[phase - 1],
+      to: ball,
+      kind: 'ball',
+      arc: BALL_ARC[phase],
+    })
     const [fromIdx, toIdx] = phase === 3 ? [2, 3] : [0, 1]
     for (const p of formation.players) {
       paths.push({
         id: `mv-${p.spec.id}`,
         from: p.phases[fromIdx],
         to: p.phases[toIdx],
+        via: phase === 3 ? undefined : p.releaseVia,
         kind: 'move',
       })
     }

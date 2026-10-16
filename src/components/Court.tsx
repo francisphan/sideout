@@ -3,6 +3,7 @@ import { COURT, ZONE_LABEL, ZONES, type Pos } from '../data/court'
 import CourtTip from './CourtTip'
 import Volleyball from './Volleyball'
 import type { CourtProps } from './courtTypes'
+import { labelPoint, pathPoints, svgPath } from './pathGeometry'
 import { usePlayerInteraction } from './usePlayerInteraction'
 
 const TOP_PAD = 0.7
@@ -88,7 +89,7 @@ export default function Court({
           <marker
             id={arrowId}
             viewBox="0 0 10 10"
-            refX="8"
+            refX="10"
             refY="5"
             markerWidth="5"
             markerHeight="5"
@@ -135,19 +136,21 @@ export default function Court({
         <line x1={COURT.width} y1={-0.45} x2={COURT.width} y2={0.45} className="court-antenna" />
 
         {paths.map((p) => {
-          if (p.kind === 'move' && p.from.x === p.to.x && p.from.y === p.to.y) return null
+          const pts = pathPoints(p)
+          if (!pts) return null
           const useArrow = p.kind === 'move' || p.kind === 'shot'
+          const label = p.label ? labelPoint(p) : null
           return (
             <g key={p.id} className={`court-path court-path-${p.kind}`}>
-              <line
-                x1={p.from.x}
-                y1={p.from.y}
-                x2={p.to.x}
-                y2={p.to.y}
-                markerEnd={useArrow ? `url(#${arrowId})` : undefined}
-              />
-              {p.label && (
-                <text x={p.to.x} y={p.to.y + 0.55} textAnchor="middle" className="court-path-label">
+              <path d={svgPath(pts)} markerEnd={useArrow ? `url(#${arrowId})` : undefined} />
+              {label && (
+                <text
+                  x={label.x}
+                  y={label.y}
+                  textAnchor="middle"
+                  dominantBaseline="hanging"
+                  className="court-path-label"
+                >
                   {p.label}
                 </text>
               )}

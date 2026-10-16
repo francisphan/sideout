@@ -285,7 +285,7 @@ body {
   fill: rgba(21, 32, 43, 0.3);
 }
 
-.court-path line {
+.court-path path {
   fill: none;
   stroke-width: 0.07;
 }
@@ -294,13 +294,13 @@ body {
   color: var(--ink);
 }
 
-.court-path-move line {
+.court-path-move path {
   stroke: var(--ink);
   stroke-dasharray: 0.26 0.18;
   opacity: 0.75;
 }
 
-.court-path-ball line {
+.court-path-ball path {
   stroke: #fff;
   stroke-width: 0.06;
   stroke-dasharray: 0.1 0.18;
@@ -308,14 +308,14 @@ body {
   opacity: 0.9;
 }
 
-.court-path-overlap line {
+.court-path-overlap path {
   stroke: #fff;
   stroke-width: 0.05;
   stroke-dasharray: 0.18 0.14;
   opacity: 0.65;
 }
 
-.court-path-overlap-bad line {
+.court-path-overlap-bad path {
   stroke: var(--red);
   stroke-width: 0.11;
 }
@@ -324,7 +324,7 @@ body {
   color: var(--court-line);
 }
 
-.court-path-shot line {
+.court-path-shot path {
   stroke: var(--court-line);
   stroke-width: 0.05;
   stroke-dasharray: 0.22 0.2;
@@ -357,29 +357,29 @@ body {
   pointer-events: none;
 }
 
-.court3d .court-path line {
+.court3d .court-path path {
   stroke-width: 3;
 }
 
-.court3d .court-path-move line {
+.court3d .court-path-move path {
   stroke-dasharray: 12 8;
 }
 
-.court3d .court-path-ball line {
+.court3d .court-path-ball path {
   stroke-width: 3;
   stroke-dasharray: 4 9;
 }
 
-.court3d .court-path-overlap line {
+.court3d .court-path-overlap path {
   stroke-width: 2.5;
   stroke-dasharray: 9 7;
 }
 
-.court3d .court-path-overlap-bad line {
+.court3d .court-path-overlap-bad path {
   stroke-width: 5;
 }
 
-.court3d .court-path-shot line {
+.court3d .court-path-shot path {
   stroke-width: 2.5;
   stroke-dasharray: 10 9;
 }
