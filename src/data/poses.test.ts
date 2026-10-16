@@ -15,6 +15,13 @@ describe('poses', () => {
     expect(poseTop(p)).toBeLessThan(3)
   })
 
+  it('side-on poses are marked as profiles so they can be mirrored', () => {
+    expect(POSES.run.profile).toBe(true)
+    expect(POSES.hit.profile).toBe(true)
+    expect(POSES.ready.profile).toBe(false)
+    expect(POSES.pass.profile).toBe(false)
+  })
+
   it('jumping poses leave the floor and reach above the net band', () => {
     expect(POSES.block.lift).toBeGreaterThan(0)
     expect(POSES.hit.lift).toBeGreaterThan(0)

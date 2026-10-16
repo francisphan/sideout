@@ -1,3 +1,4 @@
+import type { CSSProperties } from 'react'
 import type { Pose, Pt } from '../data/poses'
 
 interface Props {
@@ -45,8 +46,9 @@ export default function Figure({ pose, color, outline }: Props) {
     </g>
   )
 
+  const style = { transform: `translate(0px, ${pose.lift}px)`, '--lift': pose.lift } as CSSProperties
   return (
-    <g className="figure" style={{ transform: `translate(0px, ${pose.lift}px)` }}>
+    <g className="figure" style={style}>
       {parts(outline, outline, 0.06)}
       {parts(color, color, 0)}
     </g>

@@ -25,6 +25,8 @@ export interface CourtPlayer {
   muted?: boolean
   /** Silhouette pose in the perspective view. */
   pose?: PoseName
+  /** Which way a side-on pose faces: 1 is to the right, -1 to the left. */
+  facing?: 1 | -1
 }
 
 export type PathKind = 'move' | 'ball' | 'overlap' | 'overlap-bad' | 'shot'

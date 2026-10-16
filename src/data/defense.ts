@@ -70,13 +70,13 @@ export const SHOTS: Record<AttackOrigin, Shot[]> = {
   right: [
     { name: 'Line', to: { x: 8.6, y: 8.7 } },
     { name: 'Cross-court', to: { x: 0.7, y: 8.4 } },
-    { name: 'Sharp angle', to: { x: 1.0, y: 3.2 } },
+    { name: 'Sharp angle', to: { x: 0.5, y: 3.9 } },
     { name: 'Tip', to: { x: 6.3, y: 2.5 } },
   ],
   left: [
     { name: 'Line', to: { x: 0.4, y: 8.7 } },
     { name: 'Cross-court', to: { x: 8.3, y: 8.4 } },
-    { name: 'Sharp angle', to: { x: 8.0, y: 3.2 } },
+    { name: 'Sharp angle', to: { x: 8.5, y: 3.9 } },
     { name: 'Tip', to: { x: 2.7, y: 2.5 } },
   ],
   middle: [

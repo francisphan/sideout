@@ -1,4 +1,4 @@
-import { useId, useRef, type PointerEvent, type ReactNode } from 'react'
+import { useId, useRef, type CSSProperties, type PointerEvent, type ReactNode } from 'react'
 import { COURT, ZONE_LABEL, ZONES, type Pos } from '../data/court'
 import { POSES, poseTop } from '../data/poses'
 import CourtTip from './CourtTip'
@@ -108,16 +108,29 @@ interface PlayerProps {
   handlers: ReturnType<ReturnType<typeof usePlayerInteraction>['handlersFor']>
 }
 
+/** A stable per-player offset so idle motion is not in lockstep. */
+function seedFor(id: string): number {
+  let h = 0
+  for (const ch of id) h = (h * 31 + ch.charCodeAt(0)) % 997
+  return (h % 26) / 10
+}
+
 function Player3D({ p, className, handlers }: PlayerProps) {
   const g = project({ x: p.pos.x, y: p.pos.y, z: 0 })
-  const pose = POSES[p.pose ?? 'stand']
+  const poseName = p.pose ?? 'stand'
+  const pose = POSES[poseName]
+  const facing = pose.profile ? (p.facing ?? 1) : 1
   const fill = p.muted ? OPPONENT_FILL : p.fill
   const tagWidth = 0.3 + p.label.length * 0.17
   const tagHeight = poseTop(pose) + 0.24
+  const style = {
+    transform: `translate(${g.sx}px, ${g.sy}px) scale(${g.k})`,
+    '--seed': `${-seedFor(p.id)}s`,
+  } as CSSProperties
   return (
     <g
-      className={className}
-      style={{ transform: `translate(${g.sx}px, ${g.sy}px) scale(${g.k})` }}
+      className={`${className} pose-${poseName}`}
+      style={style}
       tabIndex={0}
       role="button"
       aria-label={`${p.tooltip.title}. ${p.tooltip.body}`}
@@ -125,8 +138,10 @@ function Player3D({ p, className, handlers }: PlayerProps) {
     >
       <ellipse className="figure-shadow" rx={0.45} ry={0.14} />
       <ellipse className="figure-ring" rx={0.56} ry={0.19} />
-      <g transform="scale(1,-1)">
-        <Figure pose={pose} color={fill} outline={p.muted ? '#6B7784' : INK} />
+      <g transform={`scale(${facing},-1)`}>
+        <g className="figure-bob">
+          <Figure pose={pose} color={fill} outline={p.muted ? '#6B7784' : INK} />
+        </g>
       </g>
       <g className="figure-tag" style={{ transform: `translate(0px, ${-tagHeight}px)` }}>
         <rect

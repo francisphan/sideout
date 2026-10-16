@@ -74,6 +74,15 @@ function poseFor(p: ReceivePlayer, phase: ReceivePhase, f: ReceiveFormation): Po
   return 'ready'
 }
 
+/** Runners face the way they are going; hitters face into the court. */
+function facingFor(p: ReceivePlayer, phase: ReceivePhase, pose: PoseName): 1 | -1 {
+  if (pose === 'run' && phase > 0) {
+    return p.phases[phase].x < p.phases[phase - 1].x ? -1 : 1
+  }
+  if (pose === 'hit') return p.phases[phase].x < 4.5 ? 1 : -1
+  return 1
+}
+
 export default function ServeReceive({ view }: { view: CourtViewMode }) {
   const [rotation, setRotation] = useState<RotationNumber>(1)
   const [phase, setPhase] = useState<ReceivePhase>(0)
@@ -116,6 +125,7 @@ export default function ServeReceive({ view }: { view: CourtViewMode }) {
 
   const players: CourtPlayer[] = formation.players.map((p) => {
     const role = ROLES[p.spec.role]
+    const pose = poseFor(p, phase, formation)
     const where = `${ZONE_NAME[p.zone]} (zone ${p.zone}), ${p.frontRow ? 'front row' : 'back row'}${p.passer ? ', passing' : ''}`
     return {
       id: p.spec.id,
@@ -124,7 +134,8 @@ export default function ServeReceive({ view }: { view: CourtViewMode }) {
       fill: role.color,
       text: role.text,
       tooltip: { title: `${p.spec.label}, ${role.name.toLowerCase()}`, subtitle: where, body: p.note },
-      pose: poseFor(p, phase, formation),
+      pose,
+      facing: facingFor(p, phase, pose),
     }
   })
 

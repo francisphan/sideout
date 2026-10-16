@@ -71,6 +71,7 @@ export default function FloorDefense({ view }: { view: CourtViewMode }) {
       text: '#15202B',
       muted: true,
       pose: read ? 'hit' : 'stand',
+      facing: ATTACKER[origin].x < 4.5 ? 1 : -1,
       tooltip: { title: 'Their hitter', subtitle: ORIGIN_LABEL[origin], body: ORIGIN_BLURB[origin] },
     },
   )
