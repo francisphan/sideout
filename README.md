@@ -7,7 +7,7 @@ Live: https://francisphan.github.io/sideout/
 ## Lessons
 
 - **Rotation basics.** The six zones, clockwise rotation on a side-out, and the overlap rule. Drag players around and the pairs that break the rule turn red.
-- **Serve receive.** All six rotations of a 5-1 with a libero. Step through before the serve, contact, pass, and set. Each player explains their job in that rotation. A switch picks who passes when the setter is back row: the opposite (default) or the outside hitter.
+- **Serve receive.** All six rotations of a 5-1 with a libero. Step through before the serve, contact, pass, and set. Each player explains their job in that rotation. An on/off flag, remembered per browser, sets whether the opposite passes in serve receive (on by default); off, the opposite hides at the net when front row and the outside hitter passes.
 - **Floor defense.** Perimeter, rotation, and middle-up systems against an attack from either pin or the middle. Base and read positions, shot lanes, and the block shadow.
 
 Two views of every lesson, switchable in the top bar: a **perspective** view from behind your own endline with silhouette players that crouch, pass, set, jump and block, and a **whiteboard** view from straight above. Positions are one common way to run each system. Either way you are looking from behind your own endline, so zone 4 is on the left.

@@ -94,11 +94,6 @@ interface RawRotation {
  */
 export type FrontRowPasser = 'opposite' | 'outside'
 
-export const FRONT_ROW_PASSERS: { value: FrontRowPasser; label: string; hint: string }[] = [
-  { value: 'opposite', label: 'Opposite', hint: 'Outside stays free to attack' },
-  { value: 'outside', label: 'Outside hitter', hint: 'Opposite hides at the net' },
-]
-
 /** Formations where the front-row outside passes and the opposite hides at the net. */
 const OUTSIDE_PASSES: Record<RotationNumber, RawRotation> = {
   1: {

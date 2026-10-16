@@ -28,6 +28,23 @@ describe('App', () => {
     expect(screen.getByRole('img', { name: /in perspective/ })).toBeInTheDocument()
   })
 
+  it('has a remembered flag for whether the opposite passes', async () => {
+    window.location.hash = '#receive'
+    render(<App />)
+    const flag = screen.getByRole('switch', { name: 'Opposite passes in serve receive' })
+    expect(flag).toHaveAttribute('aria-checked', 'true')
+    expect(screen.getByRole('button', { name: /^OPP, opposite\. Front-row passer/ })).toBeInTheDocument()
+
+    await userEvent.click(flag)
+    expect(flag).toHaveAttribute('aria-checked', 'false')
+    expect(screen.getByText('Opposite not passing')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /^OPP, opposite\. Hides at the net/ })).toBeInTheDocument()
+    expect(window.localStorage.getItem('sideout.oppositePasses')).toBe('false')
+
+    await userEvent.click(flag)
+    expect(window.localStorage.getItem('sideout.oppositePasses')).toBe('true')
+  })
+
   it('steps serve receive through its phases', async () => {
     window.location.hash = '#receive'
     render(<App />)

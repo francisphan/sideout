@@ -3,17 +3,14 @@ import CourtView from '../components/CourtView'
 import type { CourtViewMode, Ball, CourtPath, CourtPlayer } from '../components/courtTypes'
 import Legend from '../components/Legend'
 import RotationDial from '../components/RotationDial'
-import Segmented from '../components/Segmented'
 import { COURT, ZONE_NAME, type Pos, type Zone } from '../data/court'
 import { FRONT_BACK_PAIRS, LEFT_RIGHT_PAIRS } from '../data/overlap'
 import { ROLES } from '../data/roles'
 import type { PoseName } from '../data/poses'
 import {
-  FRONT_ROW_PASSERS,
   RECEIVE_PHASES,
   receiveFormation,
   TARGET,
-  type FrontRowPasser,
   type ReceiveFormation,
   type ReceivePhase,
   type ReceivePlayer,
@@ -22,6 +19,18 @@ import {
 
 /** The server is 9 m past the net; we draw the ball entering from the top edge. */
 const SERVER: Pos = { x: 6.2, y: -(COURT.farDepth + 0.3) }
+
+const OPP_FLAG_KEY = 'sideout.oppositePasses'
+
+function loadOppositePasses(): boolean {
+  try {
+    const v = window.localStorage.getItem(OPP_FLAG_KEY)
+    if (v === 'true' || v === 'false') return v === 'true'
+  } catch {
+    // Storage can be unavailable; use the default.
+  }
+  return true
+}
 
 function samePos(a: Pos, b: Pos) {
   return a.x === b.x && a.y === b.y
@@ -50,9 +59,20 @@ export default function ServeReceive({ view }: { view: CourtViewMode }) {
   const [playing, setPlaying] = useState(false)
   const [showOverlap, setShowOverlap] = useState(true)
   const [selected, setSelected] = useState<string | null>(null)
-  const [frontRowPasser, setFrontRowPasser] = useState<FrontRowPasser>('opposite')
+  const [oppositePasses, setOppositePasses] = useState<boolean>(loadOppositePasses)
 
-  const formation = receiveFormation(rotation, frontRowPasser)
+  const formation = receiveFormation(rotation, oppositePasses ? 'opposite' : 'outside')
+
+  function toggleOppositePasses() {
+    const next = !oppositePasses
+    setOppositePasses(next)
+    setSelected(null)
+    try {
+      window.localStorage.setItem(OPP_FLAG_KEY, String(next))
+    } catch {
+      // Not persisting is fine.
+    }
+  }
 
   useEffect(() => {
     if (!playing) return
@@ -172,6 +192,32 @@ export default function ServeReceive({ view }: { view: CourtViewMode }) {
           whichever middle is in the back row. Pick a rotation, then step through the serve.
         </p>
 
+        <div className="flag">
+          <div className="flag-text">
+            <span id="opp-flag-label" className="flag-label">
+              Opposite passes in serve receive
+            </span>
+            <span className="flag-hint">
+              {oppositePasses
+                ? 'On: the opposite is one of the three passers in every rotation.'
+                : 'Off: when front row, the opposite hides at the net and the outside hitter passes.'}
+            </span>
+          </div>
+          <button
+            type="button"
+            role="switch"
+            aria-checked={oppositePasses}
+            aria-labelledby="opp-flag-label"
+            className={`switch${oppositePasses ? ' switch-on' : ''}`}
+            onClick={toggleOppositePasses}
+          >
+            <span className="switch-track" aria-hidden="true">
+              <span className="switch-knob" />
+            </span>
+            <span className="switch-text">{oppositePasses ? 'On' : 'Off'}</span>
+          </button>
+        </div>
+
         <div className="controls-row">
           <RotationDial value={rotation} onChange={pickRotation} />
           <button
@@ -183,24 +229,13 @@ export default function ServeReceive({ view }: { view: CourtViewMode }) {
           </button>
         </div>
 
-        <h3>Who passes when the setter is back row</h3>
-        <Segmented
-          label="Front-row passer in rotations 1 to 3"
-          value={frontRowPasser}
-          onChange={(v) => {
-            setFrontRowPasser(v)
-            setSelected(null)
-          }}
-          options={FRONT_ROW_PASSERS}
-        />
-        <p className="hint">
-          Two back-row players and the libero are never enough on their own: when the setter is back
-          row, one front-row hitter must pass too. In rotations 4 to 6 the opposite is back row and
-          passes either way.
-        </p>
-
-        <h3>
-          Rotation {formation.n}, {formation.title.toLowerCase()}
+        <h3 className="with-chip">
+          <span>
+            Rotation {formation.n}, {formation.title.toLowerCase()}
+          </span>
+          <span className={`chip${oppositePasses ? ' chip-on' : ''}`}>
+            {oppositePasses ? 'Opposite passing' : 'Opposite not passing'}
+          </span>
         </h3>
         <p>{formation.summary}</p>
 
