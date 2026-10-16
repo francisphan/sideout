@@ -38,3 +38,6 @@ coverage/
 
 # Local screenshots
 .shots/
+
+# Agent worktrees
+.claude/
