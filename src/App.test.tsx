@@ -28,21 +28,30 @@ describe('App', () => {
     expect(screen.getByRole('img', { name: /in perspective/ })).toBeInTheDocument()
   })
 
-  it('has a remembered flag for whether the opposite passes', async () => {
+  it('has a remembered serve receive system choice', async () => {
     window.location.hash = '#receive'
     render(<App />)
-    const flag = screen.getByRole('switch', { name: 'Opposite passes in serve receive' })
-    expect(flag).toHaveAttribute('aria-checked', 'true')
+    expect(screen.getByRole('radio', { name: /Opposite passes/ })).toHaveAttribute('aria-checked', 'true')
     expect(screen.getByRole('button', { name: /^OPP, opposite\. Front-row passer/ })).toBeInTheDocument()
 
-    await userEvent.click(flag)
-    expect(flag).toHaveAttribute('aria-checked', 'false')
+    await userEvent.click(screen.getByRole('radio', { name: /Outside passes/ }))
     expect(screen.getByText('Opposite not passing')).toBeInTheDocument()
     expect(screen.getByRole('button', { name: /^OPP, opposite\. Hides at the net/ })).toBeInTheDocument()
-    expect(window.localStorage.getItem('sideout.oppositePasses')).toBe('false')
+    expect(window.localStorage.getItem('sideout.receiveSystem')).toBe('outside')
 
-    await userEvent.click(flag)
-    expect(window.localStorage.getItem('sideout.oppositePasses')).toBe('true')
+    await userEvent.click(screen.getByRole('radio', { name: /Four passers/ }))
+    expect(screen.getByText('Four passers', { selector: '.chip' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /^OH1, outside hitter\. Front-row short passer/ })).toBeInTheDocument()
+    expect(window.localStorage.getItem('sideout.receiveSystem')).toBe('four')
+  })
+
+  it('migrates the old on/off opposite flag', () => {
+    window.localStorage.removeItem('sideout.receiveSystem')
+    window.localStorage.setItem('sideout.oppositePasses', 'false')
+    window.location.hash = '#receive'
+    render(<App />)
+    expect(screen.getByRole('radio', { name: /Outside passes/ })).toHaveAttribute('aria-checked', 'true')
+    window.localStorage.removeItem('sideout.oppositePasses')
   })
 
   it('steps serve receive through its phases', async () => {

@@ -28,7 +28,7 @@ describe('overlapViolations', () => {
   })
 
   it.each(ROTATIONS)('rotation %i pre-serve formation is legal with either front-row passer', (n) => {
-    for (const passer of ['opposite', 'outside'] as const) {
+    for (const passer of ['opposite', 'outside', 'four'] as const) {
       const f = receiveFormation(n, passer)
       const pos = {} as Record<Zone, Pos>
       for (const p of f.players) pos[p.zone] = p.phases[0]

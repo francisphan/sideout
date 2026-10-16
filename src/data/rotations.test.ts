@@ -51,6 +51,30 @@ describe('receiveFormation', () => {
     for (const p of f.players) expect(p.note.length).toBeGreaterThan(20)
   })
 
+  it.each(ROTATIONS)('rotation %i: four-person receive uses both outsides, the libero and the opposite', (n) => {
+    const f = receiveFormation(n, 'four')
+    const passers = f.players.filter((p) => p.passer).map((p) => p.spec.id).sort()
+    expect(passers).toEqual(['L', 'OH1', 'OH2', 'OPP'])
+    for (const p of f.players) {
+      if (p.spec.role === 'S' || p.spec.role === 'MB') expect(p.passer).toBe(false)
+      expect(p.note.length).toBeGreaterThan(20)
+    }
+    // Two short passers near the attack line and two deep ones.
+    const depths = f.players.filter((p) => p.passer).map((p) => p.phases[0].y).sort((a, b) => a - b)
+    expect(depths[1]).toBeLessThan(5.5)
+    expect(depths[2]).toBeGreaterThan(6.5)
+  })
+
+  it('in a four-person receive, front-row passers attack from the side they passed on', () => {
+    const r1 = receiveFormation(1, 'four')
+    const opp = r1.players.find((p) => p.spec.id === 'OPP')!
+    const oh1 = r1.players.find((p) => p.spec.id === 'OH1')!
+    expect(opp.phases[3].x).toBeLessThan(3)
+    expect(oh1.phases[3].x).toBeGreaterThan(6)
+    const r4 = receiveFormation(4, 'four')
+    expect(r4.players.find((p) => p.spec.id === 'OH2')!.phases[3].x).toBeGreaterThan(6)
+  })
+
   it('with the outside passing, the opposite hides at the net in rotations 1 to 3', () => {
     for (const n of [1, 2, 3] as const) {
       const f = receiveFormation(n, 'outside')
@@ -83,7 +107,7 @@ describe('receiveFormation', () => {
   })
 
   it.each(ROTATIONS)('rotation %i: passers hold their spot until the ball is passed', (n) => {
-    for (const passer of ['opposite', 'outside'] as const) {
+    for (const passer of ['opposite', 'outside', 'four'] as const) {
       const f = receiveFormation(n, passer)
       for (const p of f.players.filter((pl) => pl.passer)) {
         expect(p.phases[1]).toEqual(p.phases[0])
@@ -97,7 +121,7 @@ describe('receiveFormation', () => {
   it('release waypoints lie on the court, between the start and end of the run', () => {
     let found = 0
     for (const n of ROTATIONS) {
-      for (const passer of ['opposite', 'outside'] as const) {
+      for (const passer of ['opposite', 'outside', 'four'] as const) {
         for (const p of receiveFormation(n, passer).players) {
           if (!p.releaseVia) continue
           found++

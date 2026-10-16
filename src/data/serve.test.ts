@@ -18,7 +18,7 @@ describe('serverX', () => {
   })
 
   it.each(ROTATIONS)('rotation %i: the serve lane clears everyone but the passer', (n) => {
-    for (const passer of ['opposite', 'outside'] as const) {
+    for (const passer of ['opposite', 'outside', 'four'] as const) {
       const f = receiveFormation(n, passer)
       const p = f.players.find((pl) => pl.spec.id === f.serveTo)!
       const target = arrivingBall(p.phases[1])

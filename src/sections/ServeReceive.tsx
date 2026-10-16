@@ -3,6 +3,7 @@ import CourtView from '../components/CourtView'
 import type { CourtViewMode, Ball, CourtPath, CourtPlayer } from '../components/courtTypes'
 import Legend from '../components/Legend'
 import RotationDial from '../components/RotationDial'
+import Segmented from '../components/Segmented'
 import { ZONE_NAME, type Pos, type Zone } from '../data/court'
 import { FRONT_BACK_PAIRS, LEFT_RIGHT_PAIRS } from '../data/overlap'
 import { ROLES } from '../data/roles'
@@ -10,9 +11,11 @@ import type { PoseName } from '../data/poses'
 import { SERVER_Y, SERVER_Z, arrivingBall, serverX } from '../data/serve'
 import {
   RECEIVE_PHASES,
+  RECEIVE_SYSTEMS,
   receiveFormation,
   TARGET,
   type ReceiveFormation,
+  type ReceiveSystem,
   type ReceivePhase,
   type ReceivePlayer,
   type RotationNumber,
@@ -21,16 +24,33 @@ import {
 /** How high each ball flight peaks above the line between its ends: serve, pass, set. */
 const BALL_ARC = [0, 0.7, 1.2, 0.5]
 
-const OPP_FLAG_KEY = 'sideout.oppositePasses'
+const SYSTEM_KEY = 'sideout.receiveSystem'
+const LEGACY_OPP_FLAG_KEY = 'sideout.oppositePasses'
 
-function loadOppositePasses(): boolean {
+const SYSTEM_CHIP: Record<ReceiveSystem, string> = {
+  opposite: 'Opposite passing',
+  outside: 'Opposite not passing',
+  four: 'Four passers',
+}
+
+const SYSTEM_BLURB: Record<ReceiveSystem, string> = {
+  opposite:
+    'Three passers. When the setter is back row, the opposite is the front-row passer and the outside hitter stays free to attack.',
+  outside:
+    'Three passers. When the setter is back row, the outside hitter passes and the opposite hides at the net. In rotations 4 to 6 the opposite is back row and passes anyway.',
+  four: 'Everyone but the setter and the middle passes: two short, two deep. Front-row passers attack from the side they passed on.',
+}
+
+function loadSystem(): ReceiveSystem {
   try {
-    const v = window.localStorage.getItem(OPP_FLAG_KEY)
-    if (v === 'true' || v === 'false') return v === 'true'
+    const v = window.localStorage.getItem(SYSTEM_KEY)
+    if (v === 'opposite' || v === 'outside' || v === 'four') return v
+    // Earlier versions stored a plain on/off flag for the opposite.
+    if (window.localStorage.getItem(LEGACY_OPP_FLAG_KEY) === 'false') return 'outside'
   } catch {
     // Storage can be unavailable; use the default.
   }
-  return true
+  return 'opposite'
 }
 
 function samePos(a: Pos, b: Pos) {
@@ -60,16 +80,15 @@ export default function ServeReceive({ view }: { view: CourtViewMode }) {
   const [playing, setPlaying] = useState(false)
   const [showOverlap, setShowOverlap] = useState(true)
   const [selected, setSelected] = useState<string | null>(null)
-  const [oppositePasses, setOppositePasses] = useState<boolean>(loadOppositePasses)
+  const [system, setSystem] = useState<ReceiveSystem>(loadSystem)
 
-  const formation = receiveFormation(rotation, oppositePasses ? 'opposite' : 'outside')
+  const formation = receiveFormation(rotation, system)
 
-  function toggleOppositePasses() {
-    const next = !oppositePasses
-    setOppositePasses(next)
+  function pickSystem(next: ReceiveSystem) {
+    setSystem(next)
     setSelected(null)
     try {
-      window.localStorage.setItem(OPP_FLAG_KEY, String(next))
+      window.localStorage.setItem(SYSTEM_KEY, next)
     } catch {
       // Not persisting is fine.
     }
@@ -207,28 +226,18 @@ export default function ServeReceive({ view }: { view: CourtViewMode }) {
 
         <div className="flag">
           <div className="flag-text">
-            <span id="opp-flag-label" className="flag-label">
-              Opposite passes in serve receive
+            <span id="system-label" className="flag-label">
+              Serve receive system
             </span>
-            <span className="flag-hint">
-              {oppositePasses
-                ? 'On: the opposite is one of the three passers in every rotation.'
-                : 'Off: when front row, the opposite hides at the net and the outside hitter passes.'}
-            </span>
+            <span className="flag-hint">{SYSTEM_BLURB[system]}</span>
           </div>
-          <button
-            type="button"
-            role="switch"
-            aria-checked={oppositePasses}
-            aria-labelledby="opp-flag-label"
-            className={`switch${oppositePasses ? ' switch-on' : ''}`}
-            onClick={toggleOppositePasses}
-          >
-            <span className="switch-track" aria-hidden="true">
-              <span className="switch-knob" />
-            </span>
-            <span className="switch-text">{oppositePasses ? 'On' : 'Off'}</span>
-          </button>
+          <Segmented
+            className="flag-control"
+            label="Serve receive system"
+            value={system}
+            onChange={pickSystem}
+            options={RECEIVE_SYSTEMS}
+          />
         </div>
 
         <div className="controls-row">
@@ -246,8 +255,8 @@ export default function ServeReceive({ view }: { view: CourtViewMode }) {
           <span>
             Rotation {formation.n}, {formation.title.toLowerCase()}
           </span>
-          <span className={`chip${oppositePasses ? ' chip-on' : ''}`}>
-            {oppositePasses ? 'Opposite passing' : 'Opposite not passing'}
+          <span className={`chip${system === 'outside' ? '' : ' chip-on'}`}>
+            {SYSTEM_CHIP[system]}
           </span>
         </h3>
         <p>{formation.summary}</p>
