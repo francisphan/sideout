@@ -2,15 +2,17 @@ import { useEffect, useState } from 'react'
 import { VIEW_OPTIONS, type CourtViewMode } from './components/courtTypes'
 import Segmented from './components/Segmented'
 import FloorDefense from './sections/FloorDefense'
+import Passing from './sections/Passing'
 import RotationBasics from './sections/RotationBasics'
 import ServeReceive from './sections/ServeReceive'
 
-type Tab = 'rotation' | 'receive' | 'defense'
+type Tab = 'rotation' | 'receive' | 'defense' | 'passing'
 
 const TABS: { id: Tab; label: string }[] = [
   { id: 'rotation', label: 'Rotation basics' },
   { id: 'receive', label: 'Serve receive' },
   { id: 'defense', label: 'Floor defense' },
+  { id: 'passing', label: 'Passing' },
 ]
 
 function tabFromHash(): Tab {
@@ -79,19 +81,22 @@ export default function App() {
             {t.label}
           </button>
         ))}
-        <Segmented
-          className="seg-compact view-switch"
-          label="Court view"
-          value={view}
-          options={VIEW_OPTIONS}
-          onChange={pickView}
-        />
+        {tab !== 'passing' && (
+          <Segmented
+            className="seg-compact view-switch"
+            label="Court view"
+            value={view}
+            options={VIEW_OPTIONS}
+            onChange={pickView}
+          />
+        )}
       </nav>
 
       <main>
         {tab === 'rotation' && <RotationBasics view={view} />}
         {tab === 'receive' && <ServeReceive view={view} />}
         {tab === 'defense' && <FloorDefense view={view} />}
+        {tab === 'passing' && <Passing />}
       </main>
 
       <footer className="footer">
