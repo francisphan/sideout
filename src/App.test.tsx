@@ -54,6 +54,29 @@ describe('App', () => {
     window.localStorage.removeItem('sideout.oppositePasses')
   })
 
+  it('teaches passing with a remembered stance and an overhand option', async () => {
+    window.localStorage.removeItem('sideout.passStance')
+    window.location.hash = '#passing'
+    render(<App />)
+    expect(screen.getByRole('heading', { name: 'Passing' })).toBeInTheDocument()
+    expect(screen.queryByRole('radio', { name: 'Whiteboard' })).not.toBeInTheDocument()
+    expect(screen.getByRole('radio', { name: /^Low/ })).toHaveAttribute('aria-checked', 'true')
+    expect(screen.getByText('Low or tall?')).toBeInTheDocument()
+
+    await userEvent.click(screen.getByRole('tab', { name: /Contact/ }))
+    expect(screen.getByText(/between your waist and your knees/)).toBeInTheDocument()
+
+    await userEvent.click(screen.getByRole('radio', { name: /^Tall/ }))
+    expect(screen.getByText(/Contact around the waist/)).toBeInTheDocument()
+    expect(window.localStorage.getItem('sideout.passStance')).toBe('tall')
+
+    await userEvent.click(screen.getByRole('radio', { name: /Overhand receive/ }))
+    expect(screen.getByText('When to use your hands')).toBeInTheDocument()
+    expect(screen.queryByRole('radio', { name: /^Tall/ })).not.toBeInTheDocument()
+    expect(screen.getByText(/thumbs and index fingers make a triangle/)).toBeInTheDocument()
+    window.localStorage.removeItem('sideout.passStance')
+  })
+
   it('steps serve receive through its phases', async () => {
     window.location.hash = '#receive'
     render(<App />)

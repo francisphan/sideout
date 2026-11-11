@@ -9,8 +9,9 @@ Live: https://francisphan.github.io/sideout/
 - **Rotation basics.** The six zones, clockwise rotation on a side-out, and the overlap rule. Drag players around and the pairs that break the rule turn red.
 - **Serve receive.** All six rotations of a 5-1 with a libero. Step through before the serve, contact, pass, and set. Each player explains their job in that rotation. A remembered choice of serve receive system: opposite passes (default), outside passes (the opposite hides at the net when front row), or a four-person receive where everyone but the setter and the middle passes.
 - **Floor defense.** Perimeter, rotation, and middle-up systems against an attack from either pin or the middle. Base and read positions, shot lanes, and the block shadow.
+- **Passing.** Technique, seen side-on: one passer stepped through ready, move, contact and finish, with numbered checkpoints on the body. Forearm pass with a remembered low (default) or tall stance, and a faint ghost of the other stance to compare; overhand receive for high float serves. Plus passing habits and how to read a missed pass.
 
-Two views of every lesson, switchable in the top bar: a **perspective** view from behind your own endline with silhouette players that crouch, pass, set, jump and block, and a **whiteboard** view from straight above. Positions are one common way to run each system. Either way you are looking from behind your own endline, so zone 4 is on the left.
+Two views of every court lesson, switchable in the top bar: a **perspective** view from behind your own endline with silhouette players that crouch, pass, set, jump and block, and a **whiteboard** view from straight above. Positions are one common way to run each system. Either way you are looking from behind your own endline, so zone 4 is on the left.
 
 ## Develop
 

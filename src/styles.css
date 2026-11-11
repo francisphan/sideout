@@ -1085,6 +1085,162 @@ body {
   font-size: 12px;
 }
 
+/* Passing lesson */
+
+.pass-frame {
+  background: linear-gradient(#dfe7ee, #eef1ee 78%);
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.pass-stage {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.pass-floor {
+  fill: var(--court);
+}
+
+.pass-floor-line {
+  stroke: var(--court-line);
+  stroke-width: 0.03;
+}
+
+.pass-player {
+  transition: transform 750ms var(--ease);
+}
+
+.pass-ghost {
+  opacity: 0.32;
+}
+
+.pass-shadow {
+  transition: transform 750ms var(--ease);
+}
+
+.pass-arc {
+  fill: none;
+  stroke-width: 0.035;
+  stroke-linecap: round;
+  stroke-dasharray: 0.06 0.09;
+}
+
+.pass-arc-serve {
+  stroke: var(--ink-2);
+  opacity: 0.6;
+}
+
+.pass-arc-pass {
+  stroke: var(--green);
+}
+
+.pass-leaves {
+  stroke: var(--gold);
+  stroke-width: 0.045;
+  stroke-linecap: round;
+}
+
+.pass-marker line {
+  stroke: var(--ink);
+  stroke-width: 0.018;
+}
+
+.pass-marker circle {
+  fill: var(--ink);
+}
+
+.pass-marker-dot {
+  stroke: #fff;
+  stroke-width: 0.012;
+}
+
+.pass-marker text {
+  fill: #fff;
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 0.15px;
+  text-anchor: middle;
+}
+
+.pass-marker {
+  animation: marker-in 300ms 350ms var(--ease) both;
+}
+
+@keyframes marker-in {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+.checks {
+  margin: 12px 0 0;
+  padding: 0;
+  list-style: none;
+  counter-reset: check;
+  display: grid;
+  gap: 8px;
+}
+
+.checks li {
+  counter-increment: check;
+  position: relative;
+  padding-left: 34px;
+  font-size: 15.5px;
+  line-height: 1.4;
+}
+
+.checks li::before {
+  content: counter(check);
+  position: absolute;
+  left: 0;
+  top: -1px;
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--ink);
+  color: #fff;
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 15px;
+}
+
+.habits {
+  margin: 0 0 12px;
+  padding-left: 20px;
+  max-width: 62ch;
+}
+
+.habits li {
+  margin-bottom: 8px;
+}
+
+.misses {
+  margin: 0;
+  max-width: 62ch;
+}
+
+.misses div {
+  padding: 8px 0;
+  border-top: 1px solid var(--rule);
+}
+
+.misses dt {
+  font-weight: 700;
+}
+
+.misses dd {
+  margin: 2px 0 0;
+  color: var(--ink-2);
+}
+
 /* Footer */
 
 .footer {
@@ -1110,10 +1266,13 @@ body {
   .figure g,
   .figure-tag,
   .figure-ring,
-  .figure-shadow {
+  .figure-shadow,
+  .pass-player,
+  .pass-shadow {
     transition: none;
   }
 
+  .pass-marker,
   .figure-bob,
   .pose-run .figure-bob,
   .pose-hit .figure,
