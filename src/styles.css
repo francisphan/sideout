@@ -915,6 +915,10 @@ body {
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
+.phases-5 {
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+}
+
 .phase {
   text-align: left;
   padding: 6px 8px 8px;
@@ -1239,6 +1243,47 @@ body {
 .misses dd {
   margin: 2px 0 0;
   color: var(--ink-2);
+}
+
+/* Hitting lesson */
+
+.hit-net-post {
+  stroke: var(--ink-2);
+  stroke-width: 0.04;
+}
+
+.hit-net-mesh {
+  fill: var(--ink-2);
+  opacity: 0.35;
+}
+
+.hit-net-tape {
+  stroke: #fff;
+  stroke-width: 0.08;
+}
+
+.hit-step ellipse {
+  fill: var(--ink);
+  opacity: 0.18;
+  transition: opacity 300ms;
+}
+
+.hit-step text {
+  fill: var(--ink);
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 0.12px;
+  text-anchor: middle;
+  opacity: 0.35;
+  transition: opacity 300ms;
+}
+
+.hit-step-on ellipse {
+  opacity: 0.55;
+}
+
+.hit-step-on text {
+  opacity: 1;
 }
 
 /* Footer */
