@@ -93,6 +93,21 @@ describe('App', () => {
     expect(screen.getByText(/Fingertips firm and spread/)).toBeInTheDocument()
   })
 
+  it('teaches blocking with a stuff and a soft block', async () => {
+    window.location.hash = '#blocking'
+    render(<App />)
+    expect(screen.getByRole('heading', { name: 'Blocking' })).toBeInTheDocument()
+    expect(screen.queryByRole('radio', { name: 'Whiteboard' })).not.toBeInTheDocument()
+    expect(screen.getByRole('radio', { name: /^Stuff block/ })).toHaveAttribute('aria-checked', 'true')
+
+    await userEvent.click(screen.getByRole('tab', { name: /Press/ }))
+    expect(screen.getByText(/Hands over the net, fingers spread/)).toBeInTheDocument()
+
+    await userEvent.click(screen.getByRole('radio', { name: /^Soft block/ }))
+    expect(screen.getByText('When to soft block')).toBeInTheDocument()
+    expect(screen.getByText(/Hands tilted back, palms facing up/)).toBeInTheDocument()
+  })
+
   it('steps serve receive through its phases', async () => {
     window.location.hash = '#receive'
     render(<App />)

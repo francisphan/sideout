@@ -1,13 +1,14 @@
 import { useEffect, useState } from 'react'
 import { VIEW_OPTIONS, type CourtViewMode } from './components/courtTypes'
 import Segmented from './components/Segmented'
+import Blocking from './sections/Blocking'
 import FloorDefense from './sections/FloorDefense'
 import Hitting from './sections/Hitting'
 import Passing from './sections/Passing'
 import RotationBasics from './sections/RotationBasics'
 import ServeReceive from './sections/ServeReceive'
 
-type Tab = 'rotation' | 'receive' | 'defense' | 'passing' | 'hitting'
+type Tab = 'rotation' | 'receive' | 'defense' | 'passing' | 'hitting' | 'blocking'
 
 const TABS: { id: Tab; label: string }[] = [
   { id: 'rotation', label: 'Rotation basics' },
@@ -15,6 +16,7 @@ const TABS: { id: Tab; label: string }[] = [
   { id: 'defense', label: 'Floor defense' },
   { id: 'passing', label: 'Passing' },
   { id: 'hitting', label: 'Hitting' },
+  { id: 'blocking', label: 'Blocking' },
 ]
 
 function tabFromHash(): Tab {
@@ -83,7 +85,7 @@ export default function App() {
             {t.label}
           </button>
         ))}
-        {tab !== 'passing' && tab !== 'hitting' && (
+        {tab !== 'passing' && tab !== 'hitting' && tab !== 'blocking' && (
           <Segmented
             className="seg-compact view-switch"
             label="Court view"
@@ -100,6 +102,7 @@ export default function App() {
         {tab === 'defense' && <FloorDefense view={view} />}
         {tab === 'passing' && <Passing />}
         {tab === 'hitting' && <Hitting />}
+        {tab === 'blocking' && <Blocking />}
       </main>
 
       <footer className="footer">
