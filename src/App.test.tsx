@@ -77,6 +77,22 @@ describe('App', () => {
     window.localStorage.removeItem('sideout.passStance')
   })
 
+  it('teaches hitting with a full swing and an off-speed option', async () => {
+    window.location.hash = '#hitting'
+    render(<App />)
+    expect(screen.getByRole('heading', { name: 'Hitting' })).toBeInTheDocument()
+    expect(screen.queryByRole('radio', { name: 'Whiteboard' })).not.toBeInTheDocument()
+    expect(screen.getByRole('radio', { name: /^Full swing/ })).toHaveAttribute('aria-checked', 'true')
+    expect(screen.getByText(/right, left, then a quick right-left/)).toBeInTheDocument()
+
+    await userEvent.click(screen.getByRole('tab', { name: /Contact/ }))
+    expect(screen.getByText(/topspin brings it down inside the court/)).toBeInTheDocument()
+
+    await userEvent.click(screen.getByRole('radio', { name: /^Off-speed/ }))
+    expect(screen.getByText('When to go off-speed')).toBeInTheDocument()
+    expect(screen.getByText(/Fingertips firm and spread/)).toBeInTheDocument()
+  })
+
   it('steps serve receive through its phases', async () => {
     window.location.hash = '#receive'
     render(<App />)
