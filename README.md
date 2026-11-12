@@ -11,6 +11,7 @@ Live: https://francisphan.github.io/sideout/
 - **Floor defense.** Perimeter, rotation, and middle-up systems against an attack from either pin or the middle. Base and read positions, shot lanes, and the block shadow.
 - **Passing.** Technique, seen side-on: one passer stepped through ready, move, contact and finish, with numbered checkpoints on the body. Forearm pass with a remembered low (default) or tall stance, and a faint ghost of the other stance to compare; overhand receive for high float serves. Plus passing habits and how to read a missed pass.
 - **Hitting.** The same side-on view for an attack: a right-hander's four-step approach (footprints on the floor), plant, jump, contact and landing at the net. Full swing, or off-speed with a tip, where the first three phases are identical on purpose. Plus hitting habits and how to read a missed attack.
+- **Blocking.** One blocker at the net, side-on, with the opposing hitter across it: ready, read, jump, press and landing. A stuff block that reaches over the net, or a soft block that tilts the ball up to your own team. Footwork along the net, blocking habits and the rules that matter, and how to read a missed block.
 
 Two views of every court lesson, switchable in the top bar: a **perspective** view from behind your own endline with silhouette players that crouch, pass, set, jump and block, and a **whiteboard** view from straight above. Positions are one common way to run each system. Either way you are looking from behind your own endline, so zone 4 is on the left.
 
